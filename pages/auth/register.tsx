@@ -26,15 +26,28 @@ interface RegisterFormValues {
 const roles = [
   {
     id: 1,
-    name: "دیتا و سوییح",
+    label: "دیتا و سوییح",
+    name: "Data",
   },
   {
     id: 2,
-    name: "انتقال",
+    label: "انتقال",
+    name: "Mux",
   },
   {
     id: 3,
-    name: "فیبر",
+    label: "فیبر",
+    name: "Fiber",
+  },
+  {
+    id: 4,
+    label: "پاور",
+    name: "Power",
+  },
+  {
+    id: 5,
+    label: "تاسیسات",
+    name: "Facilities",
   },
 ];
 
@@ -71,29 +84,6 @@ const Register: NextPage = () => {
     password: "",
     confirmPassword: "",
   };
-
-  // const handleSubmit = async (values: RegisterFormValues) => {
-  //   const url = "http://localhost:8000/users/createUser";
-
-  //   try {
-  //     const response = await fetch(url, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(values),
-  //     });
-
-  //     const result = await response.json();
-  //     console.log("Response:", result);
-  //     if (response.ok) {
-  //       router.push("http://localhost:3000/home/home");
-  //     } else {
-  //       // Handle failure if needed
-  //       alert("Registration failed");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
 
   const handleSubmit = async (values: RegisterFormValues) => {
     const checkUserUrl = `http://localhost:8000/users/getUserByCode?code=${values.code}`;
@@ -179,17 +169,18 @@ const Register: NextPage = () => {
                 </div>
 
                 <Listbox
-                  value={roles.find((role) => role.name === values.role)} // Find the matching role object
-                  onChange={(selectedRole) =>
-                    setFieldValue("role", selectedRole.name)
-                  } // Store only the name
+                  value={roles.find((role) => role.name === values.role)} // Find the role object based on the role name
+                  onChange={
+                    (selectedRole) => setFieldValue("role", selectedRole.name) // Store only the name in the form state
+                  }
                 >
                   <div className="relative mt-2">
                     <ListboxButton className="grid w-full cursor-default grid-cols-1 rounded-md bg-white py-1.5 pl-3 pr-2 text-left text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm">
                       <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
-                        {/* Display the selected role name */}
                         <span className="block truncate">
-                          {values.role || "انتخاب کنید"}
+                          {/* Display the label for the currently selected role */}
+                          {roles.find((role) => role.name === values.role)
+                            ?.label || "انتخاب کنید"}
                         </span>
                       </span>
                       <ChevronUpDownIcon
@@ -198,22 +189,18 @@ const Register: NextPage = () => {
                       />
                     </ListboxButton>
 
-                    <ListboxOptions
-                      transition
-                      className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
-                    >
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
                       {roles.map((role) => (
                         <ListboxOption
                           key={role.id}
-                          value={role} // Pass the entire role object
+                          value={role} // Pass the entire role object as the value
                           className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
                         >
                           <div className="flex items-center">
                             <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
-                              {role.name}
+                              {role.label}
                             </span>
                           </div>
-
                           <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-[&:not([data-selected])]:hidden group-data-[focus]:text-white">
                             <CheckIcon aria-hidden="true" className="size-5" />
                           </span>

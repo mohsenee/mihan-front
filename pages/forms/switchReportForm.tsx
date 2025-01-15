@@ -1,17 +1,24 @@
 import { NextPage } from "next";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
+import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
 import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 
+// Define the type for names
+interface NameOption {
+  label: string;
+  value: string;
+}
+
 interface FormState {
   reportDate: string;
-  dayOfWeek: string;
+  day: string;
   comments: string;
-  shiftName: string;
+  names: string[];
   checklistItems: ChecklistItem[];
   capacityItems: CapacityItem[];
 }
@@ -31,6 +38,10 @@ interface CapacityItem {
 }
 
 const SwitchReportForm: NextPage = () => {
+  const [currentDate, setCurrentDate] = useState<string>("");
+  const [currentDay, setCurrentDay] = useState<string>("");
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]); // Store names as NameOption[] (with label and value)
+
   const checklistItems: ChecklistItem[] = [
     {
       id: 1,
@@ -52,6 +63,24 @@ const SwitchReportForm: NextPage = () => {
       label: "وضعیت سنسور های شرایط پیرامونی",
       selected: true,
     },
+    {
+      id: 6,
+      task: "RCVTrafficFile",
+      label: "دریافت فایل ترافیکی",
+      selected: false,
+    },
+    {
+      id: 7,
+      task: "ProcessTrafficFile",
+      label: "پردازش فایل ترافیکی",
+      selected: false,
+    },
+    {
+      id: 8,
+      task: "RCVChargingFile",
+      label: "دریافت فایل شارژینگ",
+      selected: false,
+    },
   ];
 
   const capacityItems: CapacityItem[] = [
@@ -64,30 +93,76 @@ const SwitchReportForm: NextPage = () => {
     { id: 7, task: "tm_mnt_pcm", label: "TM.MNT.PCM", quantity: "" },
   ];
 
+  const daysOfWeek = [
+    { value: "0", label: "یکشنبه" },
+    { value: "1", label: "دوشنبه" },
+    { value: "2", label: "سه‌شنبه" },
+    { value: "3", label: "چهارشنبه" },
+    { value: "4", label: "پنج‌شنبه" },
+    { value: "5", label: "جمعه" },
+    { value: "6", label: "شنبه" },
+  ];
+
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
+    const date = new Date();
+    const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+
+    const formattedDate = new Intl.DateTimeFormat("fa-IR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+
+    setCurrentDate(formattedDate);
+    setCurrentDay(dayIndex.toString());
+
+    const fetchNames = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/users/getUserByRole?role=Data`
+        );
+        const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
+        setNamesOptions(
+          data.map((name: string) => ({ label: name, value: name }))
+        ); // Map names to label and value
+      } catch (error) {
+        console.error("Failed to fetch shift names:", error);
+      }
+    };
+
+    fetchNames();
   }, []);
 
   const handleSubmit = async (values: FormState) => {
-    const mappedValues = {
+    const mappedValues: { [key: string]: string | boolean | number } = {
       reportDate: values.reportDate,
-      dayOfWeek: values.dayOfWeek,
-      shiftName: values.shiftName,
+      day: values.day,
+      names: values.names.join(", "), // Join names into a string
       comments: values.comments,
-      checklistItems: values.checklistItems.map((item) => ({
-        id: item.id,
-        task: item.task,
-        selected: item.selected,
-      })),
-      capacityItems: values.capacityItems.map((item) => ({
-        id: item.id,
-        task: item.task,
-        quantity: item.quantity,
-      })),
     };
+
+    values.checklistItems.forEach((item) => {
+      mappedValues[item.task] = item.selected;
+    });
+
+    values.capacityItems.forEach((item) => {
+      mappedValues[item.task] = item.quantity;
+    });
 
     try {
       console.log("Mapped Values:", mappedValues);
+      const createForm = await fetch(
+        "http://localhost:8000/forms/createSwithForm",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mappedValues),
+        }
+      );
+
+      const result = await createForm.json();
+      console.log("Response:", result);
       alert("Data sent successfully!");
     } catch (error) {
       console.error("Error:", error);
@@ -97,42 +172,40 @@ const SwitchReportForm: NextPage = () => {
 
   const validationSchema = Yup.object({
     reportDate: Yup.string().required("تاریخ گزارش الزامی است"),
-    dayOfWeek: Yup.string().required("روز هفته الزامی است"),
-    shiftName: Yup.string().required("اسامی شیفت الزامی است"),
-    comments: Yup.string().required("گزارش الزامی است"),
+    day: Yup.string().required("روز هفته الزامی است"),
+    names: Yup.array().min(1, "اسامی شیفت الزامی است"),
+    capacityItems: Yup.array()
+      .of(
+        Yup.object({
+          quantity: Yup.number()
+            .typeError("مقدار باید عدد باشد")
+            .positive("مقدار باید بزرگتر از صفر باشد")
+            .nullable(),
+        })
+      )
+      .min(1, "باید حداقل یک ظرفیت وارد شود"),
   });
-
-  const daysOfWeek = [
-    { label: "شنبه", value: "Saturday" },
-    { label: "یک‌شنبه", value: "Sunday" },
-    { label: "دوشنبه", value: "Monday" },
-    { label: "سه‌شنبه", value: "Tuesday" },
-    { label: "چهارشنبه", value: "Wednesday" },
-    { label: "پنج‌شنبه", value: "Thursday" },
-    { label: "جمعه", value: "Friday" },
-  ];
 
   return (
     <div
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{
-        backgroundImage: "url('/image/11.png')",
-      }}
+      style={{ backgroundImage: "url('/image/11.png')" }}
     >
       <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
         <Formik
           initialValues={{
-            reportDate: "",
-            dayOfWeek: "",
+            reportDate: currentDate,
+            day: currentDay,
             comments: "",
-            shiftName: "",
+            names: [],
             checklistItems: checklistItems,
             capacityItems: capacityItems,
           }}
           validationSchema={validationSchema}
+          enableReinitialize // Reinitialize Formik when currentDate/currentDay changes
           onSubmit={handleSubmit}
         >
-          {({ setFieldValue, values }) => (
+          {({ setFieldValue, values, errors, touched, validateField }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فرم گزارش روزانه دیتا و سوئیچ
@@ -145,28 +218,23 @@ const SwitchReportForm: NextPage = () => {
                     تاریخ گزارش
                   </label>
                   <Field name="reportDate">
-                    {({ field, form }: FieldProps) => {
-                      // Handle value properly
-                      const selectedDate = field.value;
-                       
-                      return (
-                        <DatePicker
-                          {...field}
-                          value={selectedDate} // Ensure the Date object is passed to DatePicker
-                          onChange={(date: any) => {
-                            const formattedDate = date
-                              ? date.format("YYYY/MM/DD")
-                              : "";
-                            form.setFieldValue("reportDate", formattedDate); // Update Formik with the formatted date string
-                          }}
-                          format="YYYY/MM/DD" // Use Persian date format
-                          placeholder="تاریخ را انتخاب کنید"
-                          className="w-full border rounded-md p-2"
-                          locale={fa} // Set locale to Persian
-                          calendar={persian} // Use Persian calendar
-                        />
-                      );
-                    }}
+                    {({ field, form }: FieldProps) => (
+                      <DatePicker
+                        {...field}
+                        value={field.value || currentDate}
+                        onChange={(date: any) => {
+                          const formattedDate = date
+                            ? date.format("YYYY/MM/DD")
+                            : "";
+                          form.setFieldValue("reportDate", formattedDate);
+                        }}
+                        format="YYYY/MM/DD"
+                        placeholder="تاریخ را انتخاب کنید"
+                        className="w-full border rounded-md p-2"
+                        locale={fa}
+                        calendar={persian}
+                      />
+                    )}
                   </Field>
                   <ErrorMessage
                     name="reportDate"
@@ -182,37 +250,46 @@ const SwitchReportForm: NextPage = () => {
                   </label>
                   <Field
                     as="select"
-                    name="dayOfWeek"
+                    name="day"
+                    value={values.day || currentDay}
+                    onChange={(e: any) => setFieldValue("day", e.target.value)}
                     className="w-full border rounded-md p-2"
                   >
-                    <option value="" label="انتخاب روز هفته" />
                     {daysOfWeek.map((day) => (
-                      <option
-                        key={day.value}
-                        value={day.value}
-                        label={day.label}
-                      />
+                      <option key={day.value} value={day.value}>
+                        {day.label}
+                      </option>
                     ))}
                   </Field>
                   <ErrorMessage
-                    name="dayOfWeek"
+                    name="day"
                     component="div"
                     className="text-red-500 text-xs mt-1"
                   />
                 </div>
 
-                {/* Shift Name */}
+                {/* Shift Names */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     اسامی شیفت
                   </label>
-                  <Field
-                    type="text"
-                    name="shiftName"
+                  <Select
+                    isMulti
+                    options={namesOptions}
+                    value={values.names.map((name) => ({
+                      label: name,
+                      value: name,
+                    }))}
+                    onChange={(selected: OnChangeValue<any, any>) => {
+                      setFieldValue(
+                        "names",
+                        selected ? selected.map((opt: any) => opt.value) : []
+                      );
+                    }}
                     className="w-full border rounded-md p-2"
                   />
                   <ErrorMessage
-                    name="shiftName"
+                    name="names"
                     component="div"
                     className="text-red-500 text-xs mt-1"
                   />
@@ -264,6 +341,7 @@ const SwitchReportForm: NextPage = () => {
               </div>
 
               {/* Capacity Section */}
+
               <div className="mt-6">
                 <h5 className="font-bold mb-2">شرایط محیطی و ظرفیت فایل</h5>
                 <table className="w-full table-auto border-collapse border border-gray-300">
@@ -294,12 +372,19 @@ const SwitchReportForm: NextPage = () => {
                             onChange={(
                               e: React.ChangeEvent<HTMLInputElement>
                             ) => {
+                              const value = e.target.value;
                               setFieldValue(
                                 `capacityItems[${index}].quantity`,
-                                e.target.value
+                                value
                               );
+                              validateField(`capacityItems[${index}].quantity`);
                             }}
                             className="w-full border rounded-md p-2"
+                          />
+                          <ErrorMessage
+                            name={`capacityItems[${index}].quantity`}
+                            component="div"
+                            className="text-red-500 text-xs mt-1"
                           />
                         </td>
                       </tr>
@@ -308,27 +393,16 @@ const SwitchReportForm: NextPage = () => {
                 </table>
               </div>
 
-              {/* Comments Section */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-1">گزارش</label>
-                <Field
-                  as="textarea"
-                  name="comments"
-                  rows={3}
-                  className="w-full border rounded-md p-2"
-                />
-                <ErrorMessage
-                  name="comments"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              {/* Submit Button */}
               <div className="mt-4 text-center">
                 <button
                   type="submit"
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={
+                    !(
+                      values &&
+                      values.capacityItems.every((item) => item.quantity)
+                    ) || false
+                  }
                 >
                   ثبت
                 </button>
