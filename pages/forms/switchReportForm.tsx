@@ -393,6 +393,21 @@ const SwitchReportForm: NextPage = () => {
                 </table>
               </div>
 
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-1">گزارش</label>
+                <Field
+                  as="textarea"
+                  name="comments"
+                  rows={3}
+                  className="w-full border rounded-md p-2"
+                />
+                <ErrorMessage
+                  name="comments"
+                  component="div"
+                  className="text-red-500 text-xs mt-1"
+                />
+              </div>
+
               <div className="mt-4 text-center">
                 <button
                   type="submit"
