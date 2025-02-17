@@ -1,6 +1,6 @@
 import Input from "@/app/components/shared/form/input";
-import { Formik, Form } from "formik";
-import { useState } from "react";
+import { Formik, Form, Field } from "formik";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import * as yup from "yup";
 
@@ -13,6 +13,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null); // Error message state
   const router = useRouter();
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevState) => !prevState);
+  };
+
   const handleSubmit = async (values: FormValues) => {
     const url = `http://localhost:8000/users/getUserByCodeAndPass?code=${values.code}&password=${values.password}`;
 
@@ -23,7 +29,7 @@ export default function Home() {
       if (response.ok) {
         console.log(data);
         alert("خوش آمدید");
-        router.push("http://localhost:3000/home/home");
+        router.push("/home/home");
       } else {
         alert("کاربر پیدا نشد لطفا کدملی و رمز را چک کنید");
       }
@@ -39,6 +45,11 @@ export default function Home() {
       .required("کدملی ضروری است"),
     password: yup.string().required().min(6, " رمز باید حداقل 6 کاراکتر باشد"),
   });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("dir", "rtl");
+  });
+
   return (
     <div id="root">
       <div>
@@ -87,7 +98,23 @@ export default function Home() {
                               </a>
                             </div>
                           </div>
-                          <Input name="password" type="password" />
+                          {/* <Input name="password" type="password" /> */}
+                          <div className="mt-2 relative">
+                            <span
+                              onClick={togglePasswordVisibility}
+                              className="absolute inset-y-0 left-3 flex items-center cursor-pointer text-gray-500"
+                            >
+                              👁️
+                            </span>
+                            <Field
+                              id="password"
+                              name="password"
+                              type={showPassword ? "text" : "password"} // Dynamically change the type
+                              required
+                              autoComplete="current-password"
+                              className="block w-full rounded-md bg-white px-5 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+                            />
+                          </div>
                         </div>
 
                         <div>
@@ -104,7 +131,7 @@ export default function Home() {
                     <p className="mt-10 text-center text-sm/6 text-blue-500">
                       عضو سامانه نیستید؟{" "}
                       <a
-                        href="http://localhost:3000/auth/register"
+                        href="/auth/register"
                         className="font-semibold text-blue-700 hover:text-blue-500"
                       >
                         ساخت حساب کاربری
@@ -115,39 +142,22 @@ export default function Home() {
               </div>
             </div>
 
-            {/* <div className="text-white flex-1 bg-center login_box md:hidden lg:block card bg-slate-800">
-              <div className="logo-wrapper flex items-center justify-center h-screen">
-                <div className="logo-center pl-24">
-                  <img src="/logo/logo.jpg" className="mx-auto" alt="logo" />
-                  <div className="text-center card-body">
-                    <div className="logo-bottom-txt mt-5">
-                      <h1 className="bold text-5xl">سامانه میهن</h1>
-                      <br></br>
-                      <h2 className="bold text-3xl">
-                        {" "}
-                        مدیریت یکپارچه هوشمند با رویکرد نگهداری و نظارت
-                      </h2>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-
             <div className="text-white flex-1 bg-center login_box md:hidden lg:block card bg-slate-800">
               <div className="logo-wrapper flex items-center justify-center h-screen">
                 <div className="flex items-center justify-between px-10">
                   <div className="logo-center flex items-center">
-                    <div className="text-center card-body">
-                      <h1 className="font-bold text-5xl mb-4">سامانه میهن</h1>
-                      <h2 className="font-bold text-3xl mt-2">
-                        مدیریت یکپارچه هوشمند با رویکرد نگهداری و نظارت
-                      </h2>
-                    </div>
-                    <img
-                      src="/logo/logo.jpg"
-                      className="w-24 h-24 mr-4 ml-4"
+                  <img
+                      src="/logo/TIC-Logo.png"
+                      className="w-60 h-60 mr-4 ml-4"
                       alt="logo"
                     />
+                    <div className="text-center card-body">
+                      <h1 className="font-bold text-5xl mb-6">سامانه میهن</h1>
+                      <h2 className="font-bold text-2xl mt-6">
+                        مدیریت یکپارچه هوشمند نگهداری و نظارت
+                      </h2>
+                    </div>
+                    
                   </div>
                 </div>
               </div>

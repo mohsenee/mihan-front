@@ -12,6 +12,7 @@ import { CheckIcon } from "@heroicons/react/20/solid";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import Input from "@/app/components/shared/form/input";
+import { useState } from "react";
 
 interface RegisterFormValues {
   name: string;
@@ -75,6 +76,7 @@ const registerFormValidationSchema = yup.object().shape({
 
 const Register: NextPage = () => {
   const router = useRouter();
+
   const initialValues: RegisterFormValues = {
     name: "",
     code: "",
@@ -118,7 +120,7 @@ const Register: NextPage = () => {
       console.log("Response:", result);
 
       if (createResponse.ok) {
-        router.push("http://localhost:3000/home/home"); // Redirect if successful
+        router.push("/home/home"); // Redirect if successful
       } else {
         alert("ثبت نام انجام نشد"); // Registration failed
       }
@@ -132,11 +134,6 @@ const Register: NextPage = () => {
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          {/* <img
-            alt="Your Company"
-            // src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=600"
-            className="mx-auto h-10 w-auto"
-          /> */}
           <h2 className="mt-10 text-center text-3xl/9 font-bold tracking-tight text-blue-700 ">
             ساخت حساب کاربری در سامانه میهن
           </h2>
@@ -144,7 +141,7 @@ const Register: NextPage = () => {
           <p className="mt-10 text-center text-sm/6 text-blue-500">
             عضو سامانه هستید؟{" "}
             <a
-              href="http://localhost:3000/"
+              href="/"
               className="font-semibold text-blue-700 hover:text-blue-500"
             >
               وارد شوید
