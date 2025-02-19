@@ -2,12 +2,18 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
+import Select, { OnChangeValue } from "react-select";
 import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynamicTable1";
 import FiberDynamicTable2 from "@/app/components/forms/dynamicTables/fiberDynamicTable2";
 import FiberDynamicTable3 from "@/app/components/forms/dynamicTables/fiberDynamicTable3";
 import { useRouter } from "next/router";
 
 const role = 'Fiber';
+
+interface NameOption {
+  label: string;
+  value: string;
+}
 
 interface FormState {
   reportDate: string;
@@ -24,7 +30,8 @@ const FiberReportForm: NextPage = () => {
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [names, setNames] = useState<string>("");
+  const [initialNames, setInitialNames] = useState<string[]>([]);
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [comment, setComment] = useState<string>("");
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
     {
@@ -89,13 +96,13 @@ const FiberReportForm: NextPage = () => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
-    const fetchNames = async () => {
+    const fetchForm = async () => {
       try {
         const response = await fetch(
           `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
         );
         const data = await response.json();
-        setNames(data.names);
+        setInitialNames(data.names.split(", "));
         setCurrentDate(data.reportDate);
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
@@ -109,15 +116,37 @@ const FiberReportForm: NextPage = () => {
       }
     };
 
+    fetchForm();
+
+    const fetchNames = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/users/getUserByRole?role=${role}`
+        );
+        const data = await response.json();
+        console.log(data);
+        setNamesOptions(
+          data
+            .filter((name: string) => !initialNames.includes(name))
+            ?.map((name: string) => ({ label: name, value: name }))
+        ); // Map names to label and value
+      } catch (error) {
+        console.error("Failed to fetch shift names:", error);
+      }
+    };
+
     fetchNames();
   }, []);
 
   const handleSubmit = async (values: FormState) => {
+    const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
+    const day = findDayOfWeek ? findDayOfWeek.value : "";
+
     const mappedValues: {
       [key: string]: string | number | boolean | any[];
     } = {
       reportDate: values.reportDate,
-      day: values.day,
+      day: day,
       names: values.names.join(", "),
       comments: values.comments,
       table1: dynamicTableData1,
@@ -145,15 +174,6 @@ const FiberReportForm: NextPage = () => {
     }
   };
 
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
-  };
-
   const validationSchema = Yup.object({
     reportDate: Yup.string().required("تاریخ گزارش الزامی است"),
     day: Yup.string().required("روز هفته الزامی است"),
@@ -170,8 +190,8 @@ const FiberReportForm: NextPage = () => {
           initialValues={{
             reportDate: currentDate,
             day: currentDay,
-            comments: "",
-            names: [],
+            comments: comment,
+            names: initialNames,
           }}
           validationSchema={validationSchema}
           enableReinitialize
@@ -222,8 +242,19 @@ const FiberReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     اسامی شیفت
                   </label>
-                  <Field
-                    value={names}
+                  <Select
+                    isMulti
+                    options={namesOptions}
+                    value={values.names.map((name) => ({
+                      label: name,
+                      value: name,
+                    }))}
+                    onChange={(selected: OnChangeValue<any, any>) => {
+                      setFieldValue(
+                        "names",
+                        selected ? selected.map((opt: any) => opt.value) : []
+                      );
+                    }}
                     className="w-full border rounded-md p-2"
                   />
                   <ErrorMessage
@@ -240,7 +271,7 @@ const FiberReportForm: NextPage = () => {
                   <FiberDynamicTable1
                     onTableDataChange={setDynamicTableData1}
                     initialData={dynamicTableData1}
-                    isReadOnly={true}
+                    isReadOnly={false}
                   />
                 ) : (
                   ""
@@ -250,7 +281,7 @@ const FiberReportForm: NextPage = () => {
                   <FiberDynamicTable2
                     onTableDataChange={setDynamicTableData2}
                     initialData={dynamicTableData2}
-                    isReadOnly={true}
+                    isReadOnly={false}
                   />
                 ) : (
                   ""
@@ -260,7 +291,7 @@ const FiberReportForm: NextPage = () => {
                   <FiberDynamicTable3
                     onTableDataChange={setDynamicTableData3}
                     initialData={dynamicTableData3}
-                    isReadOnly={true}
+                    isReadOnly={false}
                   />
                 ) : (
                   ""
@@ -274,7 +305,6 @@ const FiberReportForm: NextPage = () => {
                 <Field
                   as="textarea"
                   name="comments"
-                  value={comment}
                   rows={3}
                   className="w-full border rounded-md p-2"
                 />
@@ -283,6 +313,16 @@ const FiberReportForm: NextPage = () => {
                   component="div"
                   className="text-red-500 text-xs mt-1"
                 />
+              </div>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={!isValid}
+                >
+                  به روز رسانی
+                </button>
               </div>
             </Form>
           )}

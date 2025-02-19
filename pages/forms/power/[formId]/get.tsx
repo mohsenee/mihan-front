@@ -2,12 +2,9 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
-import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
-import "react-multi-date-picker/styles/layouts/mobile.css";
-import persian from "react-date-object/calendars/persian";
-import fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
+
+const role = 'Power';
 
 interface FormState {
   reportDate: string;
@@ -361,7 +358,7 @@ const PowerReportForm: NextPage = () => {
     const fetchForm = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=Power`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
         );
         const data = await response.json();
         setNames(data.names);

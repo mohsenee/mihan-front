@@ -28,7 +28,7 @@ const roles = [
   {
     id: 1,
     label: "دیتا و سوییح",
-    name: "Data",
+    name: "Switch",
   },
   {
     id: 2,

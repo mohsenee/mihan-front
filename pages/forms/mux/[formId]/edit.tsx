@@ -2,11 +2,17 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
+import Select, { OnChangeValue } from "react-select";
 import MuxDynamicTable1 from "@/app/components/forms/dynamicTables/muxDynamicTable1";
 import MuxDynamicTable2 from "@/app/components/forms/dynamicTables/muxDynamicTable2";
 import { useRouter } from "next/router";
 
-const role = 'Mux';
+const role = "Mux";
+
+interface NameOption {
+  label: string;
+  value: string;
+}
 
 interface FormState {
   reportDate: string;
@@ -193,7 +199,8 @@ const MuxReportForm: NextPage = () => {
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [names, setNames] = useState<string>("");
+  const [initialNames, setInitialNames] = useState<string[]>([]);
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
   const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
   const [otherItems, setOtherItems] = useState(initialOtherItems);
@@ -214,14 +221,13 @@ const MuxReportForm: NextPage = () => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
-    const fetchform = async () => {
+    const fetchForm = async () => {
       try {
         const response = await fetch(
           `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
         );
         const data = await response.json();
-        
-        setNames(data.names);
+        setInitialNames(data.names.split(", "));
         setCurrentDate(data.reportDate);
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
@@ -244,6 +250,7 @@ const MuxReportForm: NextPage = () => {
           }
           return item;
         });
+        setChecklistItems(updatedChecklistItems);
 
         const updatedOtherItems = otherItems.map((item) => {
           if (data[item.task]) {
@@ -255,8 +262,6 @@ const MuxReportForm: NextPage = () => {
           }
           return item;
         });
-
-        setChecklistItems(updatedChecklistItems);
         setOtherItems(updatedOtherItems);
         setDynamicTableData1(data.reports);
         setDynamicTableData2(data.missionReports);
@@ -265,15 +270,37 @@ const MuxReportForm: NextPage = () => {
       }
     };
 
-    fetchform();
+    fetchForm();
+
+    const fetchNames = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/users/getUserByRole?role=${role}`
+        );
+        const data = await response.json();
+  
+        setNamesOptions(
+          data
+            .filter((name: string) => !initialNames.includes(name))
+            ?.map((name: string) => ({ label: name, value: name }))
+        ); // Map names to label and value
+      } catch (error) {
+        console.error("Failed to fetch shift names:", error);
+      }
+    };
+
+    fetchNames();
   }, []);
 
   const handleSubmit = async (values: FormState) => {
+    const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
+    const day = findDayOfWeek ? findDayOfWeek.value : "";
+
     const mappedValues: {
       [key: string]: string | number | boolean | ChecklistValues | any[];
     } = {
       reportDate: values.reportDate,
-      day: values.day,
+      day: day,
       names: values.names.join(", "),
       comments: values.comments,
       reports: dynamicTableData1,
@@ -296,18 +323,24 @@ const MuxReportForm: NextPage = () => {
       mappedValues[item.task] = item.quantity;
     });
 
+    const requestValue = {
+      formId: router.query.formId,
+      role: role,
+      form: mappedValues,
+    };
+
     try {
       console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createMuxForm",
+      const updateForm = await fetch(
+        `http://localhost:8000/forms/updateFormById/${router.query.formId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          body: JSON.stringify(requestValue),
         }
       );
 
-      const result = await createForm.json();
+      const result = await updateForm.json();
       console.log("Response:", result);
       alert("Data sent successfully!");
     } catch (error) {
@@ -332,8 +365,8 @@ const MuxReportForm: NextPage = () => {
           initialValues={{
             reportDate: currentDate,
             day: currentDay,
-            comments: "",
-            names: [],
+            comments: comment,
+            names: initialNames,
             checklistItems: checklistItems,
             otherItems: otherItems,
           }}
@@ -386,8 +419,19 @@ const MuxReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     اسامی شیفت
                   </label>
-                  <Field
-                    value={names}
+                  <Select
+                    isMulti
+                    options={namesOptions}
+                    value={values.names.map((name) => ({
+                      label: name,
+                      value: name,
+                    }))}
+                    onChange={(selected: OnChangeValue<any, any>) => {
+                      setFieldValue(
+                        "names",
+                        selected ? selected.map((opt: any) => opt.value) : []
+                      );
+                    }}
                     className="w-full border rounded-md p-2"
                   />
                   <ErrorMessage
@@ -565,25 +609,17 @@ const MuxReportForm: NextPage = () => {
                 </table>
               </div>
 
-              {dynamicTableData1.length ? (
-                <MuxDynamicTable1
-                  onTableDataChange={setDynamicTableData1}
-                  initialData={dynamicTableData1}
-                  isReadOnly={true}
-                />
-              ) : (
-                ""
-              )}
+              <MuxDynamicTable1
+                onTableDataChange={setDynamicTableData1}
+                initialData={dynamicTableData1}
+                isReadOnly={false}
+              />
 
-              {dynamicTableData2.length ? (
-                <MuxDynamicTable2
-                  onTableDataChange={setDynamicTableData2}
-                  initialData={dynamicTableData2}
-                  isReadOnly={true}
-                />
-              ) : (
-                ""
-              )}
+              <MuxDynamicTable2
+                onTableDataChange={setDynamicTableData2}
+                initialData={dynamicTableData2}
+                isReadOnly={false}
+              />
 
               <div className="mt-6">
                 <label className="block text-sm font-medium mb-1">
@@ -593,7 +629,6 @@ const MuxReportForm: NextPage = () => {
                   as="textarea"
                   name="comments"
                   rows={3}
-                  value={comment}
                   className="w-full border rounded-md p-2"
                 />
                 <ErrorMessage
@@ -601,6 +636,16 @@ const MuxReportForm: NextPage = () => {
                   component="div"
                   className="text-red-500 text-xs mt-1"
                 />
+              </div>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={!isValid}
+                >
+                  به روز رسانی
+                </button>
               </div>
             </Form>
           )}

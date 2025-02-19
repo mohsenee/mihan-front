@@ -11,6 +11,8 @@ import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynami
 import FiberDynamicTable2 from "@/app/components/forms/dynamicTables/fiberDynamicTable2";
 import FiberDynamicTable3 from "@/app/components/forms/dynamicTables/fiberDynamicTable3";
 
+const role = 'Fiber';
+
 // Define the type for names
 interface NameOption {
   label: string;
@@ -60,9 +62,9 @@ const FiberReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Fiber`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
-        const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
+        const data = await response.json();
         setNamesOptions(
           data.map((name: string) => ({ label: name, value: name }))
         ); // Map names to label and value

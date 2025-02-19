@@ -46,7 +46,7 @@ const Home = () => {
       <div className="flex-grow flex items-center justify-center">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-11/12 mx-auto my-16">
           {/* Card 1 */}
-          <a href="/forms/switch/switchReportForm" className="text-white no-underline">
+          <a href="/forms/switch/reports" className="text-white no-underline">
             <div className="bg-blue-600 text-center p-6 rounded-md shadow-md">
               <h3 className="text-lg font-bold">دیتا و سوئیچ</h3>
               <p>Data&Switch</p>
@@ -54,7 +54,7 @@ const Home = () => {
           </a>
 
           {/* Card 2 */}
-          <a href="/forms/mux/muxReportForm" className="text-white no-underline">
+          <a href="/forms/mux/reports" className="text-white no-underline">
             <div className="bg-blue-500 text-center p-6 rounded-md shadow-md">
               <h3 className="text-lg font-bold">انتقال</h3>
               <p>Mux</p>
@@ -62,7 +62,7 @@ const Home = () => {
           </a>
 
           {/* Card 3 */}
-          <a href="/forms/fiber/fiberReportForm" className="text-white no-underline">
+          <a href="/forms/fiber/reports" className="text-white no-underline">
             <div className="bg-blue-400 text-center p-6 rounded-md shadow-md">
               <h3 className="text-lg font-bold">فیبر نوری</h3>
               <p>fiber</p>
@@ -71,7 +71,7 @@ const Home = () => {
 
           {/* Card 4 */}
           <a
-            href="/forms/facilities/facilitiesReportForm"
+            href="/forms/facilities/reports"
             className="text-white no-underline"
           >
             <div className="bg-cyan-600 text-center p-6 rounded-md shadow-md">
@@ -81,7 +81,7 @@ const Home = () => {
           </a>
 
           {/* Card 5 */}
-          <a href="/forms/power/powerReportForm" className="text-white no-underline">
+          <a href="/forms/power/reports" className="text-white no-underline">
             <div className="bg-cyan-500 text-center p-6 rounded-md shadow-md">
               <h3 className="text-lg font-bold">پاور</h3>
               <p>Power</p>

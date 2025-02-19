@@ -9,6 +9,8 @@ import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
 
+const role = 'Facilities';
+
 // Define the type for names
 interface NameOption {
   label: string;
@@ -56,7 +58,7 @@ const FacilitiesReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Facilities`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
         const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
         setNamesOptions(

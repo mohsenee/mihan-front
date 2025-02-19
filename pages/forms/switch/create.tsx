@@ -2,10 +2,18 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
+import Select, { OnChangeValue } from "react-select";
+import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
-import { useRouter } from "next/router";
+import persian from "react-date-object/calendars/persian";
+import fa from "react-date-object/locales/persian_fa";
 
 const role = 'Switch';
+
+interface NameOption {
+  label: string;
+  value: string;
+}
 
 interface FormState {
   reportDate: string;
@@ -30,40 +38,61 @@ interface CapacityItem {
   quantity: string;
 }
 
-const initialCapacityItems: CapacityItem[] = [
-  { id: 1, task: "temperature", label: "دما", quantity: "" },
-  { id: 2, task: "humidity", label: "رطوبت", quantity: "" },
-  { id: 3, task: "bandwidth", label: "میزان پهنای باند مصرفی", quantity: "" },
-  { id: 4, task: "hf_archive", label: "HF.ARCHIVE", quantity: "" },
-  { id: 5, task: "sg_oper", label: "SG.OPER", quantity: "" },
-  { id: 6, task: "tm_mnt_port", label: "TM.MNT.PORT", quantity: "" },
-  { id: 7, task: "tm_mnt_pcm", label: "TM.MNT.PCM", quantity: "" },
-];
-
-const initialChecklistItems = [
-  { id: 1, task: "switch_status", label: "وضعیت تجهیزات سوئیچ", selected: true },
-  { id: 2, task: "data_status", label: "وضعیت تجهیزات دیتا", selected: true },
-  { id: 3, task: "log_review", label: "بررسی LOG سیستم", selected: true },
-  { id: 4, task: "network_traffic", label: "وضعیت ترافیک شبکه و UpLinks", selected: true },
-  { id: 5, task: "sensor_status", label: "وضعیت سنسور های شرایط پیرامونی", selected: true },
-  { id: 6, task: "RCVTrafficFile", label: "دریافت فایل ترافیکی", selected: false },
-  { id: 7, task: "ProcessTrafficFile", label: "پردازش فایل ترافیکی", selected: false },
-  { id: 8, task: "RCVChargingFile", label: "دریافت فایل شارژینگ", selected: false },
-];
-
 const SwitchReportForm: NextPage = () => {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
-
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [names, setNames] = useState<string>("");
-  const [comment, setComment] = useState<string>("");
-  const [capacityItems, setCapacityItems] = useState(initialCapacityItems);
-  const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+
+  const checklistItems: ChecklistItem[] = [
+    {
+      id: 1,
+      task: "switch_status",
+      label: "وضعیت تجهیزات سوئیچ",
+      selected: false,
+    },
+    { id: 2, task: "data_status", label: "وضعیت تجهیزات دیتا", selected: false },
+    { id: 3, task: "log_review", label: "بررسی LOG سیستم", selected: false },
+    {
+      id: 4,
+      task: "network_traffic",
+      label: "وضعیت ترافیک شبکه و UpLinks",
+      selected: false,
+    },
+    {
+      id: 5,
+      task: "sensor_status",
+      label: "وضعیت سنسور های شرایط پیرامونی",
+      selected: false,
+    },
+    {
+      id: 6,
+      task: "RCVTrafficFile",
+      label: "دریافت فایل ترافیکی",
+      selected: false,
+    },
+    {
+      id: 7,
+      task: "ProcessTrafficFile",
+      label: "پردازش فایل ترافیکی",
+      selected: false,
+    },
+    {
+      id: 8,
+      task: "RCVChargingFile",
+      label: "دریافت فایل شارژینگ",
+      selected: false,
+    },
+  ];
+
+  const capacityItems: CapacityItem[] = [
+    { id: 1, task: "temperature", label: "دما", quantity: "" },
+    { id: 2, task: "humidity", label: "رطوبت", quantity: "" },
+    { id: 3, task: "bandwidth", label: "میزان پهنای باند مصرفی", quantity: "" },
+    { id: 4, task: "hf_archive", label: "HF.ARCHIVE", quantity: "" },
+    { id: 5, task: "sg_oper", label: "SG.OPER", quantity: "" },
+    { id: 6, task: "tm_mnt_port", label: "TM.MNT.PORT", quantity: "" },
+    { id: 7, task: "tm_mnt_pcm", label: "TM.MNT.PCM", quantity: "" },
+  ];
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -77,40 +106,33 @@ const SwitchReportForm: NextPage = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
+    const date = new Date();
+    const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)
 
-    const fetchForm = async () => {
+    const formattedDate = new Intl.DateTimeFormat("fa-IR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+
+    setCurrentDate(formattedDate);
+    setCurrentDay(dayIndex.toString());
+
+    const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
-        const data = await response.json();
-        
-        setNames(data.names);
-        setComment(data.comments)
-        setCurrentDate(data.reportDate);
-        const day = daysOfWeek.find((d) => d.value === data.day.toString());
-        setCurrentDay(day ? day.label : "Unknown");
-
-        const updatedCapacityItems = capacityItems.map(item => ({
-          ...item,
-          quantity: data[item.task] || "0", // Use "0" as a default if missing
-        }));
-    
-        setCapacityItems(updatedCapacityItems);
-
-        const updatedChecklistItems = checklistItems.map(item => ({
-          ...item,
-          selected: data[item.task],
-        }));
-    
-        setChecklistItems(updatedChecklistItems);
-
+        const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
+        setNamesOptions(
+          data.map((name: string) => ({ label: name, value: name }))
+        ); // Map names to label and value
       } catch (error) {
         console.error("Failed to fetch shift names:", error);
       }
     };
 
-    fetchForm();
+    fetchNames();
   }, []);
 
   const handleSubmit = async (values: FormState) => {
@@ -149,6 +171,14 @@ const SwitchReportForm: NextPage = () => {
     }
   };
 
+  const handleDateChange = (date: any, setFieldValue: any) => {
+    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
+    setFieldValue("reportDate", formattedDate);
+
+    // Get the day index from the selected date
+    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
+    setFieldValue("day", dayIndex.toString());
+  };
 
   const validationSchema = Yup.object({
     reportDate: Yup.string().required("تاریخ گزارش الزامی است"),
@@ -199,11 +229,26 @@ const SwitchReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     تاریخ گزارش
                   </label>
-                  <Field
-                    name="reportDate"
-                    value={currentDate}
-                    className="w-full border rounded-md p-2"
-                  ></Field>
+                  <Field name="reportDate">
+                    {({ field, form }: FieldProps) => (
+                      <DatePicker
+                        {...field}
+                        value={field.value || currentDate}
+                        onChange={(date: any) => handleDateChange(date, setFieldValue)}
+                        // onChange={(date: any) => {
+                        //   const formattedDate = date
+                        //     ? date.format("YYYY/MM/DD")
+                        //     : "";
+                        //   form.setFieldValue("reportDate", formattedDate);
+                        // }}
+                        format="YYYY/MM/DD"
+                        placeholder="تاریخ را انتخاب کنید"
+                        className="w-full border rounded-md p-2"
+                        locale={fa}
+                        calendar={persian}
+                      />
+                    )}
+                  </Field>
                   <ErrorMessage
                     name="reportDate"
                     component="div"
@@ -217,10 +262,18 @@ const SwitchReportForm: NextPage = () => {
                     روز هفته
                   </label>
                   <Field
+                    as="select"
                     name="day"
-                    value={currentDay}
+                    value={values.day || currentDay}
+                    onChange={(e: any) => setFieldValue("day", e.target.value)}
                     className="w-full border rounded-md p-2"
-                  ></Field>
+                  >
+                    {daysOfWeek.map((day) => (
+                      <option key={day.value} value={day.value}>
+                        {day.label}
+                      </option>
+                    ))}
+                  </Field>
                   <ErrorMessage
                     name="day"
                     component="div"
@@ -233,8 +286,19 @@ const SwitchReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     اسامی شیفت
                   </label>
-                  <Field
-                    value={names}
+                  <Select
+                    isMulti
+                    options={namesOptions}
+                    value={values.names.map((name) => ({
+                      label: name,
+                      value: name,
+                    }))}
+                    onChange={(selected: OnChangeValue<any, any>) => {
+                      setFieldValue(
+                        "names",
+                        selected ? selected.map((opt: any) => opt.value) : []
+                      );
+                    }}
                     className="w-full border rounded-md p-2"
                   />
                   <ErrorMessage
@@ -271,7 +335,7 @@ const SwitchReportForm: NextPage = () => {
                           {item.label}
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
-                          <input
+                          <Field
                             type="checkbox"
                             checked={item.selected}
                             onChange={() =>
@@ -347,7 +411,6 @@ const SwitchReportForm: NextPage = () => {
                 <Field
                   as="textarea"
                   name="comments"
-                  value= {comment}
                   rows={3}
                   className="w-full border rounded-md p-2"
                 />
@@ -358,6 +421,15 @@ const SwitchReportForm: NextPage = () => {
                 />
               </div>
 
+              <div className="mt-4 text-center">
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={!isValid}
+                >
+                  ثبت
+                </button>
+              </div>
             </Form>
           )}
         </Formik>

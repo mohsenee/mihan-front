@@ -1,14 +1,13 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import Select, { OnChangeValue } from "react-select";
 import * as Yup from "yup";
-import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
-import persian from "react-date-object/calendars/persian";
-import fa from "react-date-object/locales/persian_fa";
+import { useRouter } from "next/router";
 
-// Define the type for names
+const role = 'Switch';
+
 interface NameOption {
   label: string;
   value: string;
@@ -37,61 +36,71 @@ interface CapacityItem {
   quantity: string;
 }
 
+const initialCapacityItems: CapacityItem[] = [
+  { id: 1, task: "temperature", label: "دما", quantity: "" },
+  { id: 2, task: "humidity", label: "رطوبت", quantity: "" },
+  { id: 3, task: "bandwidth", label: "میزان پهنای باند مصرفی", quantity: "" },
+  { id: 4, task: "hf_archive", label: "HF.ARCHIVE", quantity: "" },
+  { id: 5, task: "sg_oper", label: "SG.OPER", quantity: "" },
+  { id: 6, task: "tm_mnt_port", label: "TM.MNT.PORT", quantity: "" },
+  { id: 7, task: "tm_mnt_pcm", label: "TM.MNT.PCM", quantity: "" },
+];
+
+const initialChecklistItems = [
+  {
+    id: 1,
+    task: "switch_status",
+    label: "وضعیت تجهیزات سوئیچ",
+    selected: true,
+  },
+  { id: 2, task: "data_status", label: "وضعیت تجهیزات دیتا", selected: true },
+  { id: 3, task: "log_review", label: "بررسی LOG سیستم", selected: true },
+  {
+    id: 4,
+    task: "network_traffic",
+    label: "وضعیت ترافیک شبکه و UpLinks",
+    selected: true,
+  },
+  {
+    id: 5,
+    task: "sensor_status",
+    label: "وضعیت سنسور های شرایط پیرامونی",
+    selected: true,
+  },
+  {
+    id: 6,
+    task: "RCVTrafficFile",
+    label: "دریافت فایل ترافیکی",
+    selected: false,
+  },
+  {
+    id: 7,
+    task: "ProcessTrafficFile",
+    label: "پردازش فایل ترافیکی",
+    selected: false,
+  },
+  {
+    id: 8,
+    task: "RCVChargingFile",
+    label: "دریافت فایل شارژینگ",
+    selected: false,
+  },
+];
+
 const SwitchReportForm: NextPage = () => {
+  const router = useRouter();
+
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
+
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]); // Store names as NameOption[] (with label and value)
-
-  const checklistItems: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "switch_status",
-      label: "وضعیت تجهیزات سوئیچ",
-      selected: true,
-    },
-    { id: 2, task: "data_status", label: "وضعیت تجهیزات دیتا", selected: true },
-    { id: 3, task: "log_review", label: "بررسی LOG سیستم", selected: true },
-    {
-      id: 4,
-      task: "network_traffic",
-      label: "وضعیت ترافیک شبکه و UpLinks",
-      selected: true,
-    },
-    {
-      id: 5,
-      task: "sensor_status",
-      label: "وضعیت سنسور های شرایط پیرامونی",
-      selected: true,
-    },
-    {
-      id: 6,
-      task: "RCVTrafficFile",
-      label: "دریافت فایل ترافیکی",
-      selected: false,
-    },
-    {
-      id: 7,
-      task: "ProcessTrafficFile",
-      label: "پردازش فایل ترافیکی",
-      selected: false,
-    },
-    {
-      id: 8,
-      task: "RCVChargingFile",
-      label: "دریافت فایل شارژینگ",
-      selected: false,
-    },
-  ];
-
-  const capacityItems: CapacityItem[] = [
-    { id: 1, task: "temperature", label: "دما", quantity: "" },
-    { id: 2, task: "humidity", label: "رطوبت", quantity: "" },
-    { id: 3, task: "bandwidth", label: "میزان پهنای باند مصرفی", quantity: "" },
-    { id: 4, task: "hf_archive", label: "HF.ARCHIVE", quantity: "" },
-    { id: 5, task: "sg_oper", label: "SG.OPER", quantity: "" },
-    { id: 6, task: "tm_mnt_port", label: "TM.MNT.PORT", quantity: "" },
-    { id: 7, task: "tm_mnt_pcm", label: "TM.MNT.PCM", quantity: "" },
-  ];
+  const [initialNames, setInitialNames] = useState<string[]>([]);
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+  const [comment, setComment] = useState<string>("");
+  const [capacityItems, setCapacityItems] = useState(initialCapacityItems);
+  const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -105,26 +114,51 @@ const SwitchReportForm: NextPage = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
-    const date = new Date();
-    const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)
 
-    const formattedDate = new Intl.DateTimeFormat("fa-IR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(date);
+    const fetchForm = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+        );
+        const data = await response.json();
 
-    setCurrentDate(formattedDate);
-    setCurrentDay(dayIndex.toString());
+        setInitialNames(data.names.split(", "));
+        setComment(data.comments)
+        setCurrentDate(data.reportDate);
+        const day = daysOfWeek.find((d) => d.value === data.day.toString());
+        setCurrentDay(day ? day.label : "Unknown");
+
+        const updatedCapacityItems = capacityItems.map((item) => ({
+          ...item,
+          quantity: data[item.task] || "0", // Use "0" as a default if missing
+        }));
+
+        setCapacityItems(updatedCapacityItems);
+
+        const updatedChecklistItems = checklistItems.map((item) => ({
+          ...item,
+          selected: data[item.task] ?? item.selected, // Use data value if exists, otherwise keep previous value
+        }));
+
+        setChecklistItems(updatedChecklistItems);
+      } catch (error) {
+        console.error("Failed to fetch form:", error);
+      }
+    };
+
+    fetchForm();
 
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Data`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
-        const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
+        const data = await response.json();
+        
         setNamesOptions(
-          data.map((name: string) => ({ label: name, value: name }))
+          data
+            .filter((name: string) => !initialNames.includes(name))
+            ?.map((name: string) => ({ label: name, value: name }))
         ); // Map names to label and value
       } catch (error) {
         console.error("Failed to fetch shift names:", error);
@@ -135,10 +169,13 @@ const SwitchReportForm: NextPage = () => {
   }, []);
 
   const handleSubmit = async (values: FormState) => {
+    const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
+    const day = findDayOfWeek ? findDayOfWeek.value : "";
+
     const mappedValues: { [key: string]: string | boolean | number } = {
       reportDate: values.reportDate,
-      day: values.day,
-      names: values.names.join(", "), // Join names into a string
+      day: day,
+      names: values.names.join(", "),
       comments: values.comments,
     };
 
@@ -150,33 +187,30 @@ const SwitchReportForm: NextPage = () => {
       mappedValues[item.task] = item.quantity;
     });
 
+    const requestValue = {
+      formId: router.query.formId,
+      role: role,
+      form: mappedValues,
+    };
+
     try {
       console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createSwithForm",
+      const updateForm = await fetch(
+        `http://localhost:8000/forms/updateFormById/${router.query.formId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          body: JSON.stringify(requestValue),
         }
       );
 
-      const result = await createForm.json();
+      const result = await updateForm.json();
       console.log("Response:", result);
       alert("Data sent successfully!");
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");
     }
-  };
-
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
   };
 
   const validationSchema = Yup.object({
@@ -206,8 +240,8 @@ const SwitchReportForm: NextPage = () => {
           initialValues={{
             reportDate: currentDate,
             day: currentDay,
-            comments: "",
-            names: [],
+            comments: comment,
+            names: initialNames,
             checklistItems: checklistItems,
             capacityItems: capacityItems,
           }}
@@ -228,26 +262,11 @@ const SwitchReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     تاریخ گزارش
                   </label>
-                  <Field name="reportDate">
-                    {({ field, form }: FieldProps) => (
-                      <DatePicker
-                        {...field}
-                        value={field.value || currentDate}
-                        onChange={(date: any) => handleDateChange(date, setFieldValue)}
-                        // onChange={(date: any) => {
-                        //   const formattedDate = date
-                        //     ? date.format("YYYY/MM/DD")
-                        //     : "";
-                        //   form.setFieldValue("reportDate", formattedDate);
-                        // }}
-                        format="YYYY/MM/DD"
-                        placeholder="تاریخ را انتخاب کنید"
-                        className="w-full border rounded-md p-2"
-                        locale={fa}
-                        calendar={persian}
-                      />
-                    )}
-                  </Field>
+                  <Field
+                    name="reportDate"
+                    value={currentDate}
+                    className="w-full border rounded-md p-2"
+                  ></Field>
                   <ErrorMessage
                     name="reportDate"
                     component="div"
@@ -261,18 +280,10 @@ const SwitchReportForm: NextPage = () => {
                     روز هفته
                   </label>
                   <Field
-                    as="select"
                     name="day"
-                    value={values.day || currentDay}
-                    onChange={(e: any) => setFieldValue("day", e.target.value)}
+                    value={currentDay}
                     className="w-full border rounded-md p-2"
-                  >
-                    {daysOfWeek.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
-                    ))}
-                  </Field>
+                  ></Field>
                   <ErrorMessage
                     name="day"
                     component="div"
@@ -426,7 +437,7 @@ const SwitchReportForm: NextPage = () => {
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                   disabled={!isValid}
                 >
-                  ثبت
+                  به روز رسانی
                 </button>
               </div>
             </Form>

@@ -3,12 +3,10 @@ import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
-import "react-multi-date-picker/styles/layouts/mobile.css";
-import persian from "react-date-object/calendars/persian";
-import fa from "react-date-object/locales/persian_fa";
+import { useRouter } from "next/router";
 
-// Define the type for names
+const role = 'Power';
+
 interface NameOption {
   label: string;
   value: string;
@@ -47,294 +45,319 @@ interface ChecklistItem {
   descriptions: string;
 }
 
+const initialChecklistItems1: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "diesel_generator_1",
+    label: "دیزل ژنراتور 1",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 2,
+    task: "diesel_generator_2",
+    label: "دیزل ژنراتور 2",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
+const initialChecklistItems2: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "EMP1",
+    label: "تابلو EMP1",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 2,
+    task: "EMP2",
+    label: "تابلو EMP2",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 3,
+    task: "MP",
+    label: "تابلو MP",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
+const initialChecklistItems3: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "capacitor",
+    label: "بانک خازن",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
+const initialChecklistItems4: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "REC1",
+    label: "REC.1(psp112)",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 2,
+    task: "REC2",
+    label: "REC.2(psp112)",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 3,
+    task: "REC3",
+    label: "REC.3(psp100)",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 4,
+    task: "REC4",
+    label: "REC.4(psp100)",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
+const initialChecklistItems5: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "UPS_Newave",
+    label: "UPS Newave",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 2,
+    task: "UPS_Riello",
+    label: "UPS Riello",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
+const initialChecklistItems6: ChecklistItem[] = [
+  {
+    id: 1,
+    task: "CONVERTOR",
+    label: "CONVERTOR",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+  {
+    id: 2,
+    task: "INVERTOR",
+    label: "INVERTOR",
+    selected1: "",
+    selected2: "",
+    selected3: "",
+    selected4: "",
+    selected5: "",
+    selected6: "",
+    selected7: "",
+    selected8: "",
+    selected9: "",
+    indicators_keys: "",
+    appearance: "",
+    temperature: "",
+    status: "",
+    descriptions: "",
+  },
+];
+
 const PowerReportForm: NextPage = () => {
+  const router = useRouter();
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
+
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]); // Store names as NameOption[] (with label and value)
-
-  const checklistItems1: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "diesel_generator_1",
-      label: "دیزل ژنراتور 1",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 2,
-      task: "diesel_generator_2",
-      label: "دیزل ژنراتور 2",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
-
-  const checklistItems2: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "EMP1",
-      label: "تابلو EMP1",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 2,
-      task: "EMP2",
-      label: "تابلو EMP2",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 3,
-      task: "MP",
-      label: "تابلو MP",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
-
-  const checklistItems3: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "capacitor",
-      label: "بانک خازن",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
-
-  const checklistItems4: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "REC1",
-      label: "REC.1(psp112)",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 2,
-      task: "REC2",
-      label: "REC.2(psp112)",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 3,
-      task: "REC3",
-      label: "REC.3(psp100)",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 4,
-      task: "REC4",
-      label: "REC.4(psp100)",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
-
-  const checklistItems5: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "UPS_Newave",
-      label: "UPS Newave",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 2,
-      task: "UPS_Riello",
-      label: "UPS Riello",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
-
-  const checklistItems6: ChecklistItem[] = [
-    {
-      id: 1,
-      task: "CONVERTOR",
-      label: "CONVERTOR",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-    {
-      id: 2,
-      task: "INVERTOR",
-      label: "INVERTOR",
-      selected1: "",
-      selected2: "",
-      selected3: "",
-      selected4: "",
-      selected5: "",
-      selected6: "",
-      selected7: "",
-      selected8: "",
-      selected9: "",
-      indicators_keys: "",
-      appearance: "",
-      temperature: "",
-      status: "",
-      descriptions: "",
-    },
-  ];
+  const [initialNames, setInitialNames] = useState<string[]>([]);
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+  const [comment, setComment] = useState<string>("");
+  const [checklistItems1, setChecklistItems1] = useState(
+    initialChecklistItems1
+  );
+  const [checklistItems2, setChecklistItems2] = useState(
+    initialChecklistItems2
+  );
+  const [checklistItems3, setChecklistItems3] = useState(
+    initialChecklistItems3
+  );
+  const [checklistItems4, setChecklistItems4] = useState(
+    initialChecklistItems4
+  );
+  const [checklistItems5, setChecklistItems5] = useState(
+    initialChecklistItems5
+  );
+  const [checklistItems6, setChecklistItems6] = useState(
+    initialChecklistItems6
+  );
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -349,26 +372,173 @@ const PowerReportForm: NextPage = () => {
   useEffect(() => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
-    const date = new Date();
-    const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)
 
-    const formattedDate = new Intl.DateTimeFormat("fa-IR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(date);
+    const fetchForm = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+        );
+        const data = await response.json();
+        setInitialNames(data.names.split(", "));
+        setCurrentDate(data.reportDate);
+        const day = daysOfWeek.find((d) => d.value === data.day.toString());
+        setCurrentDay(day ? day.label : "Unknown");
+        setComment(data.comments);
 
-    setCurrentDate(formattedDate);
-    setCurrentDay(dayIndex.toString());
+        const updatedChecklistItems1 = checklistItems1.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              selected1: taskStatus.VBATT,
+              selected2: taskStatus.IBATT,
+              selected3: taskStatus.fuel,
+              selected4: taskStatus.oil,
+              selected5: taskStatus.water,
+              selected6: taskStatus.diesel_heater,
+              selected7: taskStatus.dampers,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems1(updatedChecklistItems1);
+
+        const updatedChecklistItems2 = checklistItems2.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              selected1: taskStatus.VT,
+              selected2: taskStatus.VS,
+              selected3: taskStatus.VR,
+              selected4: taskStatus.IT,
+              selected5: taskStatus.IS,
+              selected6: taskStatus.IR,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems2(updatedChecklistItems2);
+
+        const updatedChecklistItems3 = checklistItems3.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems3(updatedChecklistItems3);
+
+        const updatedChecklistItems4 = checklistItems4.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              selected1: taskStatus.VT_in,
+              selected2: taskStatus.VS_in,
+              selected3: taskStatus.VR_in,
+              selected4: taskStatus.IT_in,
+              selected5: taskStatus.IS_in,
+              selected6: taskStatus.IR_in,
+              selected7: taskStatus.VOUT,
+              selected8: taskStatus.IOUT,
+              selected9: taskStatus.IBATT,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems4(updatedChecklistItems4);
+
+        const updatedChecklistItems5 = checklistItems5.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              selected1: taskStatus.VT_out,
+              selected2: taskStatus.VS_out,
+              selected3: taskStatus.VR_out,
+              selected4: taskStatus.IT_out,
+              selected5: taskStatus.IS_out,
+              selected6: taskStatus.IR_out,
+              selected7: taskStatus.F_out,
+              selected8: taskStatus.VBATT,
+              selected9: taskStatus.IBATT,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems5(updatedChecklistItems5);
+
+        const updatedChecklistItems6 = checklistItems6.map((item) => {
+          const taskStatus = data[item.task]; // Access corresponding task data from `data`
+          if (taskStatus) {
+            // Check if the task exists in `data`, then assign corresponding status to each of the fields
+            return {
+              ...item,
+              selected1: taskStatus.VOUT,
+              selected2: taskStatus.IOUT,
+              selected3: taskStatus.V_in,
+              selected4: taskStatus.I_in,
+              indicators_keys: taskStatus.indicators_keys,
+              appearance: taskStatus.appearance,
+              temperature: taskStatus.temperature,
+              status: taskStatus.status,
+              descriptions: taskStatus.descriptions,
+            };
+          }
+          return item;
+        });
+        setChecklistItems6(updatedChecklistItems6);
+      } catch (error) {
+        console.error("Failed to fetch shift names:", error);
+      }
+    };
+
+    fetchForm();
 
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Power`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
         const data = await response.json();
+        console.log(data);
         setNamesOptions(
-          data.map((name: string) => ({ label: name, value: name }))
+          data
+            .filter((name: string) => !initialNames.includes(name))
+            ?.map((name: string) => ({ label: name, value: name }))
         ); // Map names to label and value
       } catch (error) {
         console.error("Failed to fetch shift names:", error);
@@ -379,11 +549,14 @@ const PowerReportForm: NextPage = () => {
   }, []); // The empty array ensures this effect runs only once on the client
 
   const handleSubmit = async (values: FormState) => {
+    const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
+    const day = findDayOfWeek ? findDayOfWeek.value : "";
+
     const mappedValues: {
       [key: string]: string | number | boolean | object;
     } = {
       reportDate: values.reportDate,
-      day: values.day,
+      day: day,
       names: values.names.join(", "), // Join names into a string
       comments: values.comments,
     };
@@ -482,33 +655,31 @@ const PowerReportForm: NextPage = () => {
         descriptions: item.descriptions,
       };
     });
+
+    const requestValue = {
+      formId: router.query.formId,
+      role: role,
+      form: mappedValues,
+    };
+
     try {
       console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createPowerForm",
+      const updateForm = await fetch(
+        `http://localhost:8000/forms/updateFormById/${router.query.formId}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          body: JSON.stringify(requestValue),
         }
       );
 
-      const result = await createForm.json();
+      const result = await updateForm.json();
       console.log("Response:", result);
       alert("Data sent successfully!");
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");
     }
-  };
-
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
   };
 
   const validationSchema = Yup.object({
@@ -527,8 +698,8 @@ const PowerReportForm: NextPage = () => {
           initialValues={{
             reportDate: currentDate,
             day: currentDay,
-            comments: "",
-            names: [],
+            comments: comment,
+            names: initialNames,
             checklistItems1: checklistItems1,
             checklistItems2: checklistItems2,
             checklistItems3: checklistItems3,
@@ -553,22 +724,10 @@ const PowerReportForm: NextPage = () => {
                   <label className="block text-sm font-medium mb-1">
                     تاریخ گزارش
                   </label>
-                  <Field name="reportDate">
-                    {({ field, form }: FieldProps) => (
-                      <DatePicker
-                        {...field}
-                        value={field.value || currentDate}
-                        onChange={(date: any) =>
-                          handleDateChange(date, setFieldValue)
-                        }
-                        format="YYYY/MM/DD"
-                        placeholder="تاریخ را انتخاب کنید"
-                        className="w-full border rounded-md p-2"
-                        locale={fa}
-                        calendar={persian}
-                      />
-                    )}
-                  </Field>
+                  <Field
+                    value={currentDate}
+                    className="w-full border rounded-md p-2"
+                  />
                   <ErrorMessage
                     name="reportDate"
                     component="div"
@@ -582,18 +741,9 @@ const PowerReportForm: NextPage = () => {
                     روز هفته
                   </label>
                   <Field
-                    as="select"
-                    name="day"
-                    value={values.day || currentDay}
-                    onChange={(e: any) => setFieldValue("day", e.target.value)}
+                    value={currentDay}
                     className="w-full border rounded-md p-2"
-                  >
-                    {daysOfWeek.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
-                    ))}
-                  </Field>
+                  />
                   <ErrorMessage
                     name="day"
                     component="div"
@@ -875,7 +1025,7 @@ const PowerReportForm: NextPage = () => {
                               e: React.ChangeEvent<HTMLInputElement>
                             ) =>
                               setFieldValue(
-                                `checklistItems1[${index}].descriptions`,
+                                `checklistItems[${index}].descriptions`,
                                 e.target.value
                               )
                             }
@@ -945,7 +1095,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected1`}
+                            name={`checklistItems2[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -961,7 +1111,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected2`}
+                            name={`checklistItems2[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -977,7 +1127,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected3`}
+                            name={`checklistItems2[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -993,7 +1143,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected4`}
+                            name={`checklistItems2[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1009,7 +1159,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected5`}
+                            name={`checklistItems2[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1025,7 +1175,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected6`}
+                            name={`checklistItems2[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1044,7 +1194,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].indicators_keys`}
+                            name={`checklistItems2[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1060,7 +1210,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].appearance`}
+                            name={`checklistItems2[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1076,7 +1226,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].temperature`}
+                            name={`checklistItems2[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1092,7 +1242,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].status`}
+                            name={`checklistItems2[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1108,7 +1258,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].descriptions`}
+                            name={`checklistItems2[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1194,7 +1344,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].indicators_keys`}
+                            name={`checklistItems3[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1210,7 +1360,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].appearance`}
+                            name={`checklistItems3[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1226,7 +1376,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].temperature`}
+                            name={`checklistItems3[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1242,7 +1392,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].status`}
+                            name={`checklistItems3[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1258,7 +1408,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].descriptions`}
+                            name={`checklistItems3[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1335,7 +1485,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected1`}
+                            name={`checklistItems4[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1351,7 +1501,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected2`}
+                            name={`checklistItems4[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1367,7 +1517,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected3`}
+                            name={`checklistItems4[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1383,7 +1533,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected4`}
+                            name={`checklistItems4[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1399,7 +1549,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected5`}
+                            name={`checklistItems4[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1415,7 +1565,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected6`}
+                            name={`checklistItems4[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1431,7 +1581,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected7`}
+                            name={`checklistItems4[${index}].selected7`}
                             type="text"
                             value={item.selected7}
                             onChange={(
@@ -1447,7 +1597,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected8`}
+                            name={`checklistItems4[${index}].selected8`}
                             type="text"
                             value={item.selected8}
                             onChange={(
@@ -1463,7 +1613,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected9`}
+                            name={`checklistItems4[${index}].selected9`}
                             type="text"
                             value={item.selected9}
                             onChange={(
@@ -1479,7 +1629,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].indicators_keys`}
+                            name={`checklistItems4[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1495,7 +1645,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].appearance`}
+                            name={`checklistItems4[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1511,7 +1661,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].temperature`}
+                            name={`checklistItems4[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1527,7 +1677,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].status`}
+                            name={`checklistItems4[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1543,7 +1693,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].descriptions`}
+                            name={`checklistItems4[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1620,7 +1770,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected1`}
+                            name={`checklistItems5[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1636,7 +1786,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected2`}
+                            name={`checklistItems5[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1652,7 +1802,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected3`}
+                            name={`checklistItems5[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1668,7 +1818,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected4`}
+                            name={`checklistItems5[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1684,7 +1834,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected5`}
+                            name={`checklistItems5[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1700,7 +1850,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected6`}
+                            name={`checklistItems5[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1716,7 +1866,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected7`}
+                            name={`checklistItems5[${index}].selected7`}
                             type="text"
                             value={item.selected7}
                             onChange={(
@@ -1732,7 +1882,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected8`}
+                            name={`checklistItems5[${index}].selected8`}
                             type="text"
                             value={item.selected8}
                             onChange={(
@@ -1748,7 +1898,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected9`}
+                            name={`checklistItems5[${index}].selected9`}
                             type="text"
                             value={item.selected9}
                             onChange={(
@@ -1764,7 +1914,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].indicators_keys`}
+                            name={`checklistItems5[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1780,7 +1930,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].appearance`}
+                            name={`checklistItems5[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1796,7 +1946,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].temperature`}
+                            name={`checklistItems5[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1812,7 +1962,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].status`}
+                            name={`checklistItems5[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1828,7 +1978,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].descriptions`}
+                            name={`checklistItems5[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1905,7 +2055,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected1`}
+                            name={`checklistItems6[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1921,7 +2071,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected2`}
+                            name={`checklistItems6[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1937,7 +2087,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected3`}
+                            name={`checklistItems6[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1953,7 +2103,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected4`}
+                            name={`checklistItems6[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1974,7 +2124,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].indicators_keys`}
+                            name={`checklistItems6[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1990,7 +2140,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].appearance`}
+                            name={`checklistItems6[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -2006,7 +2156,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].temperature`}
+                            name={`checklistItems6[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -2022,7 +2172,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].status`}
+                            name={`checklistItems6[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -2038,7 +2188,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].descriptions`}
+                            name={`checklistItems6[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -2066,19 +2216,18 @@ const PowerReportForm: NextPage = () => {
                 <Field
                   as="textarea"
                   name="comments"
-                  placeholder="توضیحات را وارد کنید"
                   rows={4}
                   className="w-full border rounded-md p-2"
                 />
               </div>
 
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <button
                   type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                   disabled={!isValid}
-                  className="bg-blue-500 text-white px-6 py-2 rounded-full"
                 >
-                  ارسال گزارش
+                  به روز رسانی
                 </button>
               </div>
             </Form>

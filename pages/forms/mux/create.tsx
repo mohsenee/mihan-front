@@ -2,13 +2,15 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
-import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
+import Select, { OnChangeValue } from "react-select";
 import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import MuxDynamicTable1 from "@/app/components/forms/dynamicTables/muxDynamicTable1";
 import MuxDynamicTable2 from "@/app/components/forms/dynamicTables/muxDynamicTable2";
+
+const role = 'Mux';
 
 // Define the type for names
 interface NameOption {
@@ -228,7 +230,7 @@ const MuxReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Mux`
+          `http://localhost:8000/users/getUserByRole?role=${role}`
         );
         const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
         setNamesOptions(

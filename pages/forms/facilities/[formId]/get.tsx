@@ -10,6 +10,8 @@ import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
 import { useRouter } from "next/router";
 
+const role = 'Facilities';
+
 
 interface FormState {
   reportDate: string;
@@ -47,7 +49,7 @@ const FacilitiesReportForm: NextPage = () => {
     const fetchForm = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=Facilities`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
         );
         const data = await response.json();
         setNames(data.names);
