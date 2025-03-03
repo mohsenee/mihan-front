@@ -7,8 +7,9 @@ import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
+import { useRouter } from "next/router";
 
-const role = 'Power';
+const role = "Power";
 
 // Define the type for names
 interface NameOption {
@@ -52,7 +53,8 @@ interface ChecklistItem {
 const PowerReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
-  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]); // Store names as NameOption[] (with label and value)
+  const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+  const router = useRouter();
 
   const checklistItems1: ChecklistItem[] = [
     {
@@ -485,19 +487,25 @@ const PowerReportForm: NextPage = () => {
       };
     });
     try {
-      console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createPowerForm",
+
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
       );
 
-      const result = await createForm.json();
-      console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");
@@ -947,7 +955,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected1`}
+                            name={`checklistItems2[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -963,7 +971,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected2`}
+                            name={`checklistItems2[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -979,7 +987,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected3`}
+                            name={`checklistItems2[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -995,7 +1003,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected4`}
+                            name={`checklistItems2[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1011,7 +1019,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected5`}
+                            name={`checklistItems2[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1027,7 +1035,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].selected6`}
+                            name={`checklistItems2[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1046,7 +1054,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].indicators_keys`}
+                            name={`checklistItems2[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1062,7 +1070,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].appearance`}
+                            name={`checklistItems2[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1078,7 +1086,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].temperature`}
+                            name={`checklistItems2[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1094,7 +1102,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].status`}
+                            name={`checklistItems2[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1110,7 +1118,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems2[${index}].descriptions`}
+                            name={`checklistItems2[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1196,7 +1204,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].indicators_keys`}
+                            name={`checklistItems3[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1212,7 +1220,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].appearance`}
+                            name={`checklistItems3[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1228,7 +1236,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].temperature`}
+                            name={`checklistItems3[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1244,7 +1252,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].status`}
+                            name={`checklistItems3[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1260,7 +1268,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems3[${index}].descriptions`}
+                            name={`checklistItems3[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1337,7 +1345,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected1`}
+                            name={`checklistItems4[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1353,7 +1361,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected2`}
+                            name={`checklistItems4[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1369,7 +1377,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected3`}
+                            name={`checklistItems4[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1385,7 +1393,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected4`}
+                            name={`checklistItems4[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1401,7 +1409,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected5`}
+                            name={`checklistItems4[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1417,7 +1425,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected6`}
+                            name={`checklistItems4[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1433,7 +1441,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected7`}
+                            name={`checklistItems4[${index}].selected7`}
                             type="text"
                             value={item.selected7}
                             onChange={(
@@ -1449,7 +1457,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected8`}
+                            name={`checklistItems4[${index}].selected8`}
                             type="text"
                             value={item.selected8}
                             onChange={(
@@ -1465,7 +1473,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].selected9`}
+                            name={`checklistItems4[${index}].selected9`}
                             type="text"
                             value={item.selected9}
                             onChange={(
@@ -1481,7 +1489,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].indicators_keys`}
+                            name={`checklistItems4[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1497,7 +1505,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].appearance`}
+                            name={`checklistItems4[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1513,7 +1521,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].temperature`}
+                            name={`checklistItems4[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1529,7 +1537,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].status`}
+                            name={`checklistItems4[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1545,7 +1553,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems4[${index}].descriptions`}
+                            name={`checklistItems4[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1622,7 +1630,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected1`}
+                            name={`checklistItems5[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1638,7 +1646,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected2`}
+                            name={`checklistItems5[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1654,7 +1662,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected3`}
+                            name={`checklistItems5[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1670,7 +1678,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected4`}
+                            name={`checklistItems5[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1686,7 +1694,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected5`}
+                            name={`checklistItems5[${index}].selected5`}
                             type="text"
                             value={item.selected5}
                             onChange={(
@@ -1702,7 +1710,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected6`}
+                            name={`checklistItems5[${index}].selected6`}
                             type="text"
                             value={item.selected6}
                             onChange={(
@@ -1718,7 +1726,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected7`}
+                            name={`checklistItems5[${index}].selected7`}
                             type="text"
                             value={item.selected7}
                             onChange={(
@@ -1734,7 +1742,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected8`}
+                            name={`checklistItems5[${index}].selected8`}
                             type="text"
                             value={item.selected8}
                             onChange={(
@@ -1750,7 +1758,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].selected9`}
+                            name={`checklistItems5[${index}].selected9`}
                             type="text"
                             value={item.selected9}
                             onChange={(
@@ -1766,7 +1774,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].indicators_keys`}
+                            name={`checklistItems5[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1782,7 +1790,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].appearance`}
+                            name={`checklistItems5[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -1798,7 +1806,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].temperature`}
+                            name={`checklistItems5[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -1814,7 +1822,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].status`}
+                            name={`checklistItems5[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -1830,7 +1838,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems5[${index}].descriptions`}
+                            name={`checklistItems5[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(
@@ -1907,7 +1915,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected1`}
+                            name={`checklistItems6[${index}].selected1`}
                             type="text"
                             value={item.selected1}
                             onChange={(
@@ -1923,7 +1931,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected2`}
+                            name={`checklistItems6[${index}].selected2`}
                             type="text"
                             value={item.selected2}
                             onChange={(
@@ -1939,7 +1947,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected3`}
+                            name={`checklistItems6[${index}].selected3`}
                             type="text"
                             value={item.selected3}
                             onChange={(
@@ -1955,7 +1963,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].selected4`}
+                            name={`checklistItems6[${index}].selected4`}
                             type="text"
                             value={item.selected4}
                             onChange={(
@@ -1976,7 +1984,7 @@ const PowerReportForm: NextPage = () => {
                         <td className="border border-gray-300 p-2 text-center"></td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].indicators_keys`}
+                            name={`checklistItems6[${index}].indicators_keys`}
                             type="text"
                             value={item.indicators_keys}
                             onChange={(
@@ -1992,7 +2000,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].appearance`}
+                            name={`checklistItems6[${index}].appearance`}
                             type="text"
                             value={item.appearance}
                             onChange={(
@@ -2008,7 +2016,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].temperature`}
+                            name={`checklistItems6[${index}].temperature`}
                             type="text"
                             value={item.temperature}
                             onChange={(
@@ -2024,7 +2032,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].status`}
+                            name={`checklistItems6[${index}].status`}
                             type="text"
                             value={item.status}
                             onChange={(
@@ -2040,7 +2048,7 @@ const PowerReportForm: NextPage = () => {
                         </td>
                         <td className="border border-gray-300 p-2 text-center">
                           <Field
-                          name={`checklistItems6[${index}].descriptions`}
+                            name={`checklistItems6[${index}].descriptions`}
                             type="text"
                             value={item.descriptions}
                             onChange={(

@@ -59,7 +59,6 @@ const FacilitiesReportForm: NextPage = () => {
   ];
 
   useEffect(() => {
-    // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
     const fetchForm = async () => {
@@ -135,7 +134,13 @@ const FacilitiesReportForm: NextPage = () => {
 
       const result = await updateForm.json();
       console.log("Response:", result);
-      alert("Data sent successfully!");
+      
+      if (updateForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");

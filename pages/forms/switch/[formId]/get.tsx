@@ -80,8 +80,17 @@ const SwitchReportForm: NextPage = () => {
 
     const fetchForm = async () => {
       try {
+        const token = localStorage.getItem("access_token");
+
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`, // Attach the JWT token
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         

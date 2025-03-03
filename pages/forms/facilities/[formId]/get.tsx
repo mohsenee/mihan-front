@@ -10,8 +10,7 @@ import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
 import { useRouter } from "next/router";
 
-const role = 'Facilities';
-
+const role = "Facilities";
 
 interface FormState {
   reportDate: string;
@@ -25,12 +24,27 @@ const FacilitiesReportForm: NextPage = () => {
   if (!router.isReady) {
     return <span>page is loading</span>;
   }
-  
+
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
   const [comment, setComment] = useState<string>("");
-  const [dynamicTableData, setDynamicTableData] = useState<any[]>([{centerName: "", floor: "", station: "", EMPM: "", code: "", equipmentName:'', equipmentCode: "" , name: "", description: "", items: "", itemsType: "", itemsNumber: ""}]);
+  const [dynamicTableData, setDynamicTableData] = useState<any[]>([
+    {
+      centerName: "",
+      floor: "",
+      station: "",
+      EMPM: "",
+      code: "",
+      equipmentName: "",
+      equipmentCode: "",
+      name: "",
+      description: "",
+      items: "",
+      itemsType: "",
+      itemsNumber: "",
+    },
+  ]);
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -48,8 +62,17 @@ const FacilitiesReportForm: NextPage = () => {
 
     const fetchForm = async () => {
       try {
+        const token = localStorage.getItem("access_token");
+
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`, // Attach the JWT token
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setNames(data.names);
@@ -65,7 +88,6 @@ const FacilitiesReportForm: NextPage = () => {
 
     fetchForm();
   }, []);
-
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
@@ -98,7 +120,6 @@ const FacilitiesReportForm: NextPage = () => {
     }
   };
 
-
   const validationSchema = Yup.object({
     reportDate: Yup.string().required("تاریخ گزارش الزامی است"),
     day: Yup.string().required("روز هفته الزامی است"),
@@ -126,7 +147,7 @@ const FacilitiesReportForm: NextPage = () => {
           {({ setFieldValue, values, validateField, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
-              فــرم ثبت عملكـــرد كليـــه امور اجرايي PM و EM تاسیسات
+                فــرم ثبت عملكـــرد كليـــه امور اجرايي PM و EM تاسیسات
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -181,7 +202,7 @@ const FacilitiesReportForm: NextPage = () => {
 
               {/* Checklist Section */}
               <div className="mt-6">
-              {dynamicTableData.length ? (
+                {dynamicTableData.length ? (
                   <FacilitiesDynamicTable
                     onTableDataChange={setDynamicTableData}
                     initialData={dynamicTableData}
@@ -199,7 +220,7 @@ const FacilitiesReportForm: NextPage = () => {
                 <Field
                   as="textarea"
                   name="comments"
-                  value= {comment}
+                  value={comment}
                   rows={3}
                   className="w-full border rounded-md p-2"
                 />
@@ -209,7 +230,6 @@ const FacilitiesReportForm: NextPage = () => {
                   className="text-red-500 text-xs mt-1"
                 />
               </div>
-
             </Form>
           )}
         </Formik>

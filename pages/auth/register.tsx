@@ -18,6 +18,7 @@ interface RegisterFormValues {
   name: string;
   code: string;
   role: string;
+  access: number;
   email: string;
   phoneNumber: string;
   password: string;
@@ -27,7 +28,7 @@ interface RegisterFormValues {
 const roles = [
   {
     id: 1,
-    label: "دیتا و سوییح",
+    label: "دیتا و سوئیچ",
     name: "Switch",
   },
   {
@@ -49,6 +50,29 @@ const roles = [
     id: 5,
     label: "تاسیسات",
     name: "Facilities",
+  },
+];
+
+const accesses = [
+  {
+    id: 1,
+    label: "مدیر",
+  },
+  {
+    id: 2,
+    label: "ناظر",
+  },
+  {
+    id: 3,
+    label: "ناظر فنی",
+  },
+  {
+    id: 4,
+    label: "کارشناس مسئول",
+  },
+  {
+    id: 5,
+    label: "کارشناس",
   },
 ];
 
@@ -80,7 +104,8 @@ const Register: NextPage = () => {
   const initialValues: RegisterFormValues = {
     name: "",
     code: "",
-    role: roles[0].name,
+    role: "",
+    access: -1,
     email: "",
     phoneNumber: "",
     password: "",
@@ -89,7 +114,7 @@ const Register: NextPage = () => {
 
   const handleSubmit = async (values: RegisterFormValues) => {
     const checkUserUrl = `http://localhost:8000/users/getUserByCode?code=${values.code}`;
-    const createUserUrl = "http://localhost:8000/users/createUser";
+    const createUserUrl = "http://localhost:8000/auth/register";
 
     try {
       // Step 1: Check if the user exists
@@ -120,6 +145,7 @@ const Register: NextPage = () => {
       console.log("Response:", result);
 
       if (createResponse.ok) {
+        localStorage.setItem("access_token", result.access_token);
         router.push("/home/home"); // Redirect if successful
       } else {
         alert("ثبت نام انجام نشد"); // Registration failed
@@ -166,9 +192,9 @@ const Register: NextPage = () => {
                 </div>
 
                 <Listbox
-                  value={roles.find((role) => role.name === values.role)} // Find the role object based on the role name
-                  onChange={
-                    (selectedRole) => setFieldValue("role", selectedRole.name) // Store only the name in the form state
+                  value={accesses.find((access) => access.id == values.access)}
+                  onChange={(selectedAccess) =>
+                    setFieldValue("access", selectedAccess.id)
                   }
                 >
                   <div className="relative mt-2">
@@ -176,8 +202,61 @@ const Register: NextPage = () => {
                       <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
                         <span className="block truncate">
                           {/* Display the label for the currently selected role */}
+                          {accesses.find((access) => access.id == values.access)
+                            ?.label || "لطفا سمت خود را انتخاب کنید"}
+                        </span>
+                      </span>
+                      <ChevronUpDownIcon
+                        aria-hidden="true"
+                        className="col-start-1 row-start-1 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                      />
+                    </ListboxButton>
+
+                    <ListboxOptions className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                      {accesses.map((access) => (
+                        <ListboxOption
+                          key={access.id}
+                          value={access}
+                          className="group relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 data-[focus]:bg-indigo-600 data-[focus]:text-white data-[focus]:outline-none"
+                        >
+                          <div className="flex items-center">
+                            <span className="ml-3 block truncate font-normal group-data-[selected]:font-semibold">
+                              {access.label}
+                            </span>
+                          </div>
+                          <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-[&:not([data-selected])]:hidden group-data-[focus]:text-white">
+                            <CheckIcon aria-hidden="true" className="size-5" />
+                          </span>
+                        </ListboxOption>
+                      ))}
+                    </ListboxOptions>
+                  </div>
+                </Listbox>
+
+                <Listbox
+                  disabled={values.access <= 2}
+                  value={roles.find((role) => role.name === values.role)} // Find the role object based on the role name
+                  onChange={
+                    (selectedRole) => setFieldValue("role", selectedRole.name) // Store only the name in the form state
+                  }
+                >
+                  <div className="relative mt-2">
+                    <ListboxButton
+                      className={`grid w-full cursor-default grid-cols-1 rounded-md py-1.5 pl-3 pr-2 text-left sm:text-sm ${
+                        values.access <= 2
+                          ? "bg-gray-100 cursor-not-allowed text-gray-400 outline-gray-300"
+                          : "bg-white text-gray-900 outline outline-1 outline-gray-300 focus:outline focus:outline-2 focus:outline-indigo-600"
+                      }`}
+                    >
+                      <span className="col-start-1 row-start-1 flex items-center gap-3 pr-6">
+                        <span
+                          className={`block truncate ${
+                            values.access <= 2 ? "text-gray-400" : ""
+                          }`}
+                        >
+                          {/* Display the label for the currently selected role */}
                           {roles.find((role) => role.name === values.role)
-                            ?.label || "انتخاب کنید"}
+                            ?.label || "لطفا واحد خود را انتخاب کنید"}
                         </span>
                       </span>
                       <ChevronUpDownIcon

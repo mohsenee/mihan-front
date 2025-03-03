@@ -7,8 +7,9 @@ import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
+import { useRouter } from "next/router";
 
-const role = 'Switch';
+const role = "Switch";
 
 interface NameOption {
   label: string;
@@ -43,6 +44,8 @@ const SwitchReportForm: NextPage = () => {
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
 
+  const router = useRouter(); 
+
   const checklistItems: ChecklistItem[] = [
     {
       id: 1,
@@ -50,7 +53,12 @@ const SwitchReportForm: NextPage = () => {
       label: "وضعیت تجهیزات سوئیچ",
       selected: false,
     },
-    { id: 2, task: "data_status", label: "وضعیت تجهیزات دیتا", selected: false },
+    {
+      id: 2,
+      task: "data_status",
+      label: "وضعیت تجهیزات دیتا",
+      selected: false,
+    },
     { id: 3, task: "log_review", label: "بررسی LOG سیستم", selected: false },
     {
       id: 4,
@@ -123,7 +131,7 @@ const SwitchReportForm: NextPage = () => {
         const response = await fetch(
           `http://localhost:8000/users/getUserByRole?role=${role}`
         );
-        const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
+        const data = await response.json();
         setNamesOptions(
           data.map((name: string) => ({ label: name, value: name }))
         ); // Map names to label and value
@@ -152,19 +160,24 @@ const SwitchReportForm: NextPage = () => {
     });
 
     try {
-      console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createSwithForm",
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
       );
 
-      const result = await createForm.json();
-      console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");
@@ -234,7 +247,9 @@ const SwitchReportForm: NextPage = () => {
                       <DatePicker
                         {...field}
                         value={field.value || currentDate}
-                        onChange={(date: any) => handleDateChange(date, setFieldValue)}
+                        onChange={(date: any) =>
+                          handleDateChange(date, setFieldValue)
+                        }
                         // onChange={(date: any) => {
                         //   const formattedDate = date
                         //     ? date.format("YYYY/MM/DD")

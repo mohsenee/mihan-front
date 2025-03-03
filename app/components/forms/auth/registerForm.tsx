@@ -23,7 +23,7 @@ interface RegisterFormValues {
 const roles = [
   {
     id: 1,
-    label: "دیتا و سوییح",
+    label: "دیتا و سوئیچ",
     name: "Switch",
   },
   {

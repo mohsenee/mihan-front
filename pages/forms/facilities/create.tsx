@@ -8,6 +8,7 @@ import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
+import { useRouter } from "next/router";
 
 const role = 'Facilities';
 
@@ -29,6 +30,7 @@ const FacilitiesReportForm: NextPage = () => {
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [dynamicTableData, setDynamicTableData] = useState<any[]>([]);
+  const router = useRouter();
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -85,19 +87,24 @@ const FacilitiesReportForm: NextPage = () => {
     };
 
     try {
-      console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createFacilitiesForm",
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
       );
 
-      const result = await createForm.json();
-      console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");

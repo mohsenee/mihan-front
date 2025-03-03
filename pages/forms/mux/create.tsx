@@ -9,8 +9,9 @@ import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import MuxDynamicTable1 from "@/app/components/forms/dynamicTables/muxDynamicTable1";
 import MuxDynamicTable2 from "@/app/components/forms/dynamicTables/muxDynamicTable2";
+import { useRouter } from "next/router";
 
-const role = 'Mux';
+const role = "Mux";
 
 // Define the type for names
 interface NameOption {
@@ -61,9 +62,32 @@ const MuxReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([{ reporter: "", systemType: "", operation: "", startTime: "", endTime: "", alarm: '', description: "" }]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([{stationName: "", stationNumber: "", names: "", timeFromCenter: "", arriveTimeToStation: "", timeFromStation: "", workPermitNumber:'', reason:'', description: ""}]);
-
+  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
+    {
+      reporter: "",
+      systemType: "",
+      operation: "",
+      startTime: "",
+      endTime: "",
+      alarm: "",
+      description: "",
+    },
+  ]);
+  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([
+    {
+      stationName: "",
+      stationNumber: "",
+      names: "",
+      timeFromCenter: "",
+      arriveTimeToStation: "",
+      timeFromStation: "",
+      workPermitNumber: "",
+      reason: "",
+      description: "",
+    },
+  ]);
+  const router = useRouter();
+  
   const checklistItems: ChecklistItem[] = [
     {
       id: 1,
@@ -273,19 +297,24 @@ const MuxReportForm: NextPage = () => {
     });
 
     try {
-      console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createMuxForm",
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
       );
 
-      const result = await createForm.json();
-      console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");

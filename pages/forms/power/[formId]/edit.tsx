@@ -376,7 +376,14 @@ const PowerReportForm: NextPage = () => {
     const fetchForm = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Attach the JWT token
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setInitialNames(data.names.split(", "));
@@ -668,14 +675,22 @@ const PowerReportForm: NextPage = () => {
         `http://localhost:8000/forms/updateFormById/${router.query.formId}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Add JWT token to the request headers
+          },
           body: JSON.stringify(requestValue),
         }
       );
 
       const result = await updateForm.json();
       console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (updateForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");

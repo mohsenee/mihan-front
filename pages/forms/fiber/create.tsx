@@ -10,6 +10,7 @@ import fa from "react-date-object/locales/persian_fa";
 import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynamicTable1";
 import FiberDynamicTable2 from "@/app/components/forms/dynamicTables/fiberDynamicTable2";
 import FiberDynamicTable3 from "@/app/components/forms/dynamicTables/fiberDynamicTable3";
+import { useRouter } from "next/router";
 
 const role = 'Fiber';
 
@@ -33,6 +34,7 @@ const FiberReportForm: NextPage = () => {
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
   const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
   const [dynamicTableData3, setDynamicTableData3] = useState<any[]>([]);
+  const router = useRouter();
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -91,19 +93,24 @@ const FiberReportForm: NextPage = () => {
     };
 
     try {
-      console.log("Mapped Values:", mappedValues);
-      const createForm = await fetch(
-        "http://localhost:8000/forms/createFiberForm",
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mappedValues),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
       );
 
-      const result = await createForm.json();
-      console.log("Response:", result);
-      alert("Data sent successfully!");
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
+      }
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to send data.");

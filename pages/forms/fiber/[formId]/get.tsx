@@ -89,10 +89,19 @@ const FiberReportForm: NextPage = () => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
-    const fetchNames = async () => {
+    const fetchForm = async () => {
       try {
+        const token = localStorage.getItem("access_token");
+
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`
+          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`, // Attach the JWT token
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data = await response.json();
         setNames(data.names);
@@ -109,7 +118,7 @@ const FiberReportForm: NextPage = () => {
       }
     };
 
-    fetchNames();
+    fetchForm();
   }, []);
 
   const handleSubmit = async (values: FormState) => {
