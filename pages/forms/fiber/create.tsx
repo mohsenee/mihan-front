@@ -34,6 +34,7 @@ const FiberReportForm: NextPage = () => {
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
   const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
   const [dynamicTableData3, setDynamicTableData3] = useState<any[]>([]);
+  const [userName, setUserName] = useState<string | null>("");
   const router = useRouter();
 
   const daysOfWeek = [
@@ -76,12 +77,21 @@ const FiberReportForm: NextPage = () => {
     };
 
     fetchNames();
+
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
   }, []);
 
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
-      [key: string]: string | number | boolean | any[];
+      [key: string]: string | number | boolean | any[] | null;
     } = {
       reportDate: values.reportDate,
       day: values.day,
@@ -90,6 +100,7 @@ const FiberReportForm: NextPage = () => {
       table1: dynamicTableData1,
       table2: dynamicTableData2,
       table3: dynamicTableData3,
+      createdBy: userName
     };
 
     try {

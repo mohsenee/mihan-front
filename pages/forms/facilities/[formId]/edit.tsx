@@ -31,6 +31,8 @@ const FacilitiesReportForm: NextPage = () => {
   const [initialNames, setInitialNames] = useState<string[]>([]);
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [comment, setComment] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>("");
   const [dynamicTableData, setDynamicTableData] = useState<any[]>([
     {
       centerName: "",
@@ -61,6 +63,15 @@ const FacilitiesReportForm: NextPage = () => {
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
 
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
+
     const fetchForm = async () => {
       try {
         const response = await fetch(
@@ -72,6 +83,7 @@ const FacilitiesReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy);
 
         setDynamicTableData(data.reports);
       } catch (error) {
@@ -106,13 +118,15 @@ const FacilitiesReportForm: NextPage = () => {
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | any[];
+      [key: string]: string | number | boolean | any[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
       names: values.names.join(", "),
       comments: values.comments,
       reports: dynamicTableData,
+      createdBy: createdBy,
+      updatedBy: userName
     };
 
     const requestValue = {

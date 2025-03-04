@@ -62,6 +62,7 @@ const MuxReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+  const [userName, setUserName] = useState<string | null>("");
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
     {
       reporter: "",
@@ -266,11 +267,20 @@ const MuxReportForm: NextPage = () => {
     };
 
     fetchNames();
+
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
   }, []);
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
-      [key: string]: string | number | boolean | ChecklistValues | any[];
+      [key: string]: string | number | boolean | ChecklistValues | any[] | null;
     } = {
       reportDate: values.reportDate,
       day: values.day,
@@ -278,6 +288,7 @@ const MuxReportForm: NextPage = () => {
       comments: values.comments,
       reports: dynamicTableData1,
       missionReports: dynamicTableData2,
+      createdBy: userName
     };
 
     values.checklistItems.forEach((item) => {

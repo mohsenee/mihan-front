@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import { useRouter } from "next/router";
 
-const role = 'Switch';
+const role = "Switch";
 
 interface NameOption {
   label: string;
@@ -101,6 +101,8 @@ const SwitchReportForm: NextPage = () => {
   const [comment, setComment] = useState<string>("");
   const [capacityItems, setCapacityItems] = useState(initialCapacityItems);
   const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
+  const [createdBy, setCreatedBy] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>("");
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -114,6 +116,15 @@ const SwitchReportForm: NextPage = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
+
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
 
     const fetchForm = async () => {
       try {
@@ -130,7 +141,8 @@ const SwitchReportForm: NextPage = () => {
         const data = await response.json();
 
         setInitialNames(data.names.split(", "));
-        setComment(data.comments)
+        setComment(data.comments);
+        setCreatedBy(data.createdBy);
         setCurrentDate(data.reportDate);
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
@@ -161,7 +173,7 @@ const SwitchReportForm: NextPage = () => {
           `http://localhost:8000/users/getUserByRole?role=${role}`
         );
         const data = await response.json();
-        
+
         setNamesOptions(
           data
             .filter((name: string) => !initialNames.includes(name))
@@ -179,11 +191,13 @@ const SwitchReportForm: NextPage = () => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
-    const mappedValues: { [key: string]: string | boolean | number } = {
+    const mappedValues: { [key: string]: string | boolean | number | null } = {
       reportDate: values.reportDate,
       day: day,
       names: values.names.join(", "),
       comments: values.comments,
+      createdBy: createdBy,
+      updatedBy: userName
     };
 
     values.checklistItems.forEach((item) => {
@@ -215,7 +229,7 @@ const SwitchReportForm: NextPage = () => {
       );
 
       const result = await updateForm.json();
-      
+
       if (updateForm.ok) {
         alert("Data sent successfully!");
         router.push(`/forms/${role.toLowerCase()}/reports`);

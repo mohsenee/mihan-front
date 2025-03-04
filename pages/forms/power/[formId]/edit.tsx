@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
 import { useRouter } from "next/router";
 
-const role = 'Power';
+const role = "Power";
 
 interface NameOption {
   label: string;
@@ -340,6 +340,8 @@ const PowerReportForm: NextPage = () => {
   const [initialNames, setInitialNames] = useState<string[]>([]);
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [comment, setComment] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>("");
   const [checklistItems1, setChecklistItems1] = useState(
     initialChecklistItems1
   );
@@ -373,6 +375,15 @@ const PowerReportForm: NextPage = () => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
+
     const fetchForm = async () => {
       try {
         const response = await fetch(
@@ -391,6 +402,7 @@ const PowerReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy);
 
         const updatedChecklistItems1 = checklistItems1.map((item) => {
           const taskStatus = data[item.task]; // Access corresponding task data from `data`
@@ -560,12 +572,14 @@ const PowerReportForm: NextPage = () => {
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | object;
+      [key: string]: string | number | boolean | object | null;
     } = {
       reportDate: values.reportDate,
       day: day,
       names: values.names.join(", "), // Join names into a string
       comments: values.comments,
+      createdBy: createdBy,
+      updatedBy: userName
     };
 
     values.checklistItems1.forEach((item) => {

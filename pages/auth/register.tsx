@@ -12,7 +12,9 @@ import { CheckIcon } from "@heroicons/react/20/solid";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import Input from "@/app/components/shared/form/input";
-import { useState } from "react";
+import { fetchUserData } from '../../app/utils/fetchUserData';
+import { AppDispatch } from '../../app/store/store';
+import { useDispatch } from "react-redux";
 
 interface RegisterFormValues {
   name: string;
@@ -100,6 +102,7 @@ const registerFormValidationSchema = yup.object().shape({
 
 const Register: NextPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   const initialValues: RegisterFormValues = {
     name: "",
@@ -146,6 +149,7 @@ const Register: NextPage = () => {
 
       if (createResponse.ok) {
         localStorage.setItem("access_token", result.access_token);
+        await fetchUserData(dispatch, result.access_token);
         router.push("/home/home"); // Redirect if successful
       } else {
         alert("ثبت نام انجام نشد"); // Registration failed

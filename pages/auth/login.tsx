@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { fetchUserData } from '../../app/utils/fetchUserData';
+import { AppDispatch } from '../../app/store/store';
+import { useDispatch } from "react-redux";
 
 const Login = () => {
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
   const togglePasswordVisibility = () => {
@@ -14,7 +18,7 @@ const Login = () => {
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(""); // Clear any previous errors
+    setError("");
 
     try {
       const response = await fetch("http://localhost:8000/auth/login", {
@@ -33,7 +37,8 @@ const Login = () => {
       }
 
       
-      localStorage.setItem("access_token", data.access_token); // Store token
+      localStorage.setItem("access_token", data.access_token);
+      await fetchUserData(dispatch, data.access_token);
 
       router.push("/home/home");
     } catch (err: any) {

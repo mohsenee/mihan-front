@@ -43,6 +43,7 @@ const SwitchReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
+  const [userName, setUserName] = useState<string | null>("");
 
   const router = useRouter(); 
 
@@ -141,14 +142,24 @@ const SwitchReportForm: NextPage = () => {
     };
 
     fetchNames();
+
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
   }, []);
 
   const handleSubmit = async (values: FormState) => {
-    const mappedValues: { [key: string]: string | boolean | number } = {
+    const mappedValues: { [key: string]: string | boolean | number | null } = {
       reportDate: values.reportDate,
       day: values.day,
-      names: values.names.join(", "), // Join names into a string
+      names: values.names.join(", "),
       comments: values.comments,
+      createdBy: userName
     };
 
     values.checklistItems.forEach((item) => {

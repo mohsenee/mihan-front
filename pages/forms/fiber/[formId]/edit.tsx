@@ -33,6 +33,8 @@ const FiberReportForm: NextPage = () => {
   const [initialNames, setInitialNames] = useState<string[]>([]);
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [comment, setComment] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>("");
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
     {
       name: "",
@@ -96,6 +98,15 @@ const FiberReportForm: NextPage = () => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
 
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
+
     const fetchForm = async () => {
       try {
         const response = await fetch(
@@ -114,6 +125,7 @@ const FiberReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy);
 
         setDynamicTableData1(data.table1);
         setDynamicTableData2(data.table2);
@@ -150,7 +162,7 @@ const FiberReportForm: NextPage = () => {
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | any[];
+      [key: string]: string | number | boolean | any[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
@@ -159,6 +171,8 @@ const FiberReportForm: NextPage = () => {
       table1: dynamicTableData1,
       table2: dynamicTableData2,
       table3: dynamicTableData3,
+      createdBy: createdBy,
+      updatedBy: userName
     };
 
     const requestValue = {

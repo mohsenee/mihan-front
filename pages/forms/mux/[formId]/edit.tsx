@@ -206,6 +206,8 @@ const MuxReportForm: NextPage = () => {
   const [otherItems, setOtherItems] = useState(initialOtherItems);
   const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
   const [comment, setComment] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
+  const [userName, setUserName] = useState<string | null>("");
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -220,6 +222,15 @@ const MuxReportForm: NextPage = () => {
   useEffect(() => {
     // Only run on the client
     document.documentElement.setAttribute("dir", "rtl");
+
+    if(localStorage.getItem("userName")){
+      setUserName(localStorage.getItem("userName"))
+    }
+    else{
+      alert("لطفا اول وارد سایت شوید");
+      router.push("/");
+      return;
+    }
 
     const fetchForm = async () => {
       try {
@@ -239,6 +250,7 @@ const MuxReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy);
 
         const updatedChecklistItems = checklistItems.map((item) => {
           const taskStatus = data[item.task]; // Access corresponding task data from `data`
@@ -285,7 +297,7 @@ const MuxReportForm: NextPage = () => {
           `http://localhost:8000/users/getUserByRole?role=${role}`
         );
         const data = await response.json();
-  
+
         setNamesOptions(
           data
             .filter((name: string) => !initialNames.includes(name))
@@ -304,7 +316,7 @@ const MuxReportForm: NextPage = () => {
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | ChecklistValues | any[];
+      [key: string]: string | number | boolean | ChecklistValues | any[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
@@ -312,6 +324,8 @@ const MuxReportForm: NextPage = () => {
       comments: values.comments,
       reports: dynamicTableData1,
       missionReports: dynamicTableData2,
+      createdBy: createdBy,
+      updatedBy: userName
     };
 
     values.checklistItems.forEach((item) => {
