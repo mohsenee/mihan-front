@@ -45,7 +45,16 @@ const SwitchReportForm: NextPage = () => {
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [userName, setUserName] = useState<string | null>("");
 
-  const router = useRouter(); 
+  const router = useRouter();
+  const { query, isReady } = router;
+
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  } else {
+    console.log("**********");
+    console.log("router.query.date:", router.query.date);
+    console.log("router.isReady:", router.isReady);
+  }
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -115,17 +124,25 @@ const SwitchReportForm: NextPage = () => {
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
-    const date = new Date();
-    const dayIndex = date.getDay(); // 0 (Sunday) to 6 (Saturday)
 
-    const formattedDate = new Intl.DateTimeFormat("fa-IR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(date);
-
-    setCurrentDate(formattedDate);
-    setCurrentDay(dayIndex.toString());
+    if (typeof window !== "undefined" && router.query.date) {
+      console.log("*******************")
+      setCurrentDate(router.query.date as string);
+      const dateObject = new Date(router.query.date as string);
+      const dayIndex = dateObject.getDay();
+      setCurrentDay(dayIndex.toString());
+    } else {
+      console.log("***************&&&&&&&&&&&****")
+      const today = new Date();
+      const formattedDate = new Intl.DateTimeFormat("fa-IR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(today);
+      setCurrentDate(formattedDate);
+      const dayIndex = today.getDay();
+      setCurrentDay(dayIndex.toString());
+    }
 
     const fetchNames = async () => {
       try {
@@ -143,10 +160,9 @@ const SwitchReportForm: NextPage = () => {
 
     fetchNames();
 
-    if(localStorage.getItem("userName")){
-      setUserName(localStorage.getItem("userName"))
-    }
-    else{
+    if (localStorage.getItem("userName")) {
+      setUserName(localStorage.getItem("userName"));
+    } else {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
@@ -159,7 +175,7 @@ const SwitchReportForm: NextPage = () => {
       day: values.day,
       names: values.names.join(", "),
       comments: values.comments,
-      createdBy: userName
+      createdBy: userName,
     };
 
     values.checklistItems.forEach((item) => {
@@ -171,33 +187,23 @@ const SwitchReportForm: NextPage = () => {
     });
 
     try {
-
-      const checkExistForm = await fetch(
-        `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
-      );
-      const data = await checkExistForm.json();
-      
-      if(data){
-        alert('قبلا در این تاریخ گزارش ثبت شده است')
-      }else{
-        const createdForm = await fetch(
-          "http://localhost:8000/forms/createForm",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
-            },
-            body: JSON.stringify({ role: role, form: mappedValues }),
-          }
-        );
-  
-        if (createdForm.ok) {
-          alert("Data sent successfully!");
-          router.push(`/forms/${role.toLowerCase()}/reports`);
-        } else {
-          alert("Failed to send data.");
+      const createdForm = await fetch(
+        "http://localhost:8000/forms/createForm",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+          },
+          body: JSON.stringify({ role: role, form: mappedValues }),
         }
+      );
+
+      if (createdForm.ok) {
+        alert("Data sent successfully!");
+        router.push(`/forms/${role.toLowerCase()}/reports`);
+      } else {
+        alert("Failed to send data.");
       }
     } catch (error) {
       console.error("Error:", error);

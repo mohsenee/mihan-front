@@ -308,23 +308,32 @@ const MuxReportForm: NextPage = () => {
     });
 
     try {
-      const createdForm = await fetch(
-        "http://localhost:8000/forms/createForm",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
-          },
-          body: JSON.stringify({ role: role, form: mappedValues }),
-        }
+      const checkExistForm = await fetch(
+        `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
       );
-
-      if (createdForm.ok) {
-        alert("Data sent successfully!");
-        router.push(`/forms/${role.toLowerCase()}/reports`);
-      } else {
-        alert("Failed to send data.");
+      const data = await checkExistForm.json();
+      
+      if(data){
+        alert('قبلا در این تاریخ گزارش ثبت شده است')
+      }else{
+        const createdForm = await fetch(
+          "http://localhost:8000/forms/createForm",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+            },
+            body: JSON.stringify({ role: role, form: mappedValues }),
+          }
+        );
+  
+        if (createdForm.ok) {
+          alert("Data sent successfully!");
+          router.push(`/forms/${role.toLowerCase()}/reports`);
+        } else {
+          alert("Failed to send data.");
+        }
       }
     } catch (error) {
       console.error("Error:", error);
