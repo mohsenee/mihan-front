@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { fetchUserData } from '../../app/utils/fetchUserData';
 import { AppDispatch } from '../../app/store/store';
@@ -15,6 +15,15 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
+
+  useEffect(() => {
+      document.documentElement.setAttribute("dir", "ltr");
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('role');
+      localStorage.removeItem('access');
+
+    }, []);
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();

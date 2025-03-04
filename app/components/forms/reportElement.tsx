@@ -64,19 +64,15 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
     const token = localStorage.getItem("access_token");
-    if (!token) {
+    const user = localStorage.getItem("userName");
+    if (!token || !user) {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
     }
 
-    if(localStorage.getItem("userName")){
-      setUserName(localStorage.getItem("userName"))
-    }
-    else{
-      alert("لطفا اول وارد سایت شوید");
-      router.push("/");
-      return;
+    if(user){
+      setUserName(user)
     }
 
 
