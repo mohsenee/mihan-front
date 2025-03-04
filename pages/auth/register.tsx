@@ -12,8 +12,8 @@ import { CheckIcon } from "@heroicons/react/20/solid";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import Input from "@/app/components/shared/form/input";
-import { fetchUserData } from '../../app/utils/fetchUserData';
-import { AppDispatch } from '../../app/store/store';
+import { fetchUserData } from "../../app/utils/fetchUserData";
+import { AppDispatch } from "../../app/store/store";
 import { useDispatch } from "react-redux";
 
 interface RegisterFormValues {
@@ -87,7 +87,7 @@ const registerFormValidationSchema = yup.object().shape({
     .string()
     .matches(/^\d{10}$/, "کدملی باید 10 رقم باشد") // Regex: ensures 10 digits
     .required("کدملی ضروری است"),
-  role: yup.string().required(),
+  access: yup.number().required(),
   email: yup.string().email("لطفا ایمیل با فرمت صحیح وارد کنید"),
   phoneNumber: yup
     .string()

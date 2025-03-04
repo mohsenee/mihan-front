@@ -17,7 +17,7 @@ const Header = (props: {
 
             <DropdownNotification />
 
-            <DropdownMessage />
+            {/* <DropdownMessage /> */}
             
           </ul>
 

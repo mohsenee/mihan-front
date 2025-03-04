@@ -15,7 +15,7 @@ export const fetchUserData = async (dispatch: AppDispatch, token: string) => {
       dispatch(setUserName(data.userName));
       localStorage.setItem('userName', data.userName);
       localStorage.setItem('role', data.role);
-      localStorage.setItem('access', data.access);
+      localStorage.setItem('access', data.access.toString());
     } else {
       throw new Error('Failed to fetch user data');
     }

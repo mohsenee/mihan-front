@@ -35,7 +35,11 @@ const fetchReports = async (role: string): Promise<Report[]> => {
   return response.json();
 };
 
-const deleteFormsWithId = async (id: string, role: string, userName: string|null) => {
+const deleteFormsWithId = async (
+  id: string,
+  role: string,
+  userName: string | null
+) => {
   const response = await fetch(
     `http://localhost:8000/forms/deleteFormById?formId=${id}&role=${role}&updatedBy=${userName}`,
     {
@@ -59,22 +63,32 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalData, setModalData] = useState<Report | null>(null);
   const [userName, setUserName] = useState<string | null>("");
+  const [userAccess, setUserAccess] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     document.documentElement.setAttribute("dir", "rtl");
     const token = localStorage.getItem("access_token");
     const user = localStorage.getItem("userName");
-    if (!token || !user) {
+    const userRole = localStorage.getItem("role");
+    const userAccess = localStorage.getItem("access");
+    if (userAccess) {
+      setUserAccess(parseInt(userAccess));
+    }
+    if (!token || !user || !userAccess) {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
     }
 
-    if(user){
-      setUserName(user)
+    if (user) {
+      setUserName(user);
     }
 
+    if (userRole !== role && parseInt(userAccess) > 2) {
+      alert("شما به این بخش دسترسی ندارید");
+      router.push("/home/home");
+    }
 
     async function loadReports() {
       const data = await fetchReports(role);
@@ -93,7 +107,9 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
 
   const handleDelete = async () => {
     if (!modalData) return;
-    const confirmDelete = window.confirm("آیا مطمئن هستید می خواهید این گزارش را حذف کنید؟");
+    const confirmDelete = window.confirm(
+      "آیا مطمئن هستید می خواهید این گزارش را حذف کنید؟"
+    );
     if (!confirmDelete) return;
 
     await deleteFormsWithId(modalData.id, role, userName);
@@ -107,49 +123,76 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
 
   return (
     <DefaultLayout>
-        <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-200 mt-10">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-800">فرم های گزارش روزانه واحد {title}</h1>
-      <DatePicker
-        calendar={persian}
-        locale={persian_fa}
-        value={selectedDate}
-        onChange={handleDateClick}
-        mapDays={({ date }) => {
-          const formattedDate = date.format();
-          const hasReport = reports.some((r) => r.reportDate === formattedDate);
-          return hasReport ? { className: "bg-green-500 text-white" } : {};
-        }}
-        className="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-200"
-      />
+      <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-200 mt-10">
+        <h1 className="mb-6 text-2xl font-semibold text-gray-800">
+          فرم های گزارش روزانه واحد {title}
+        </h1>
+        <DatePicker
+          calendar={persian}
+          locale={persian_fa}
+          value={selectedDate}
+          onChange={handleDateClick}
+          mapDays={({ date }) => {
+            const formattedDate = date.format();
+            const hasReport = reports.some(
+              (r) => r.reportDate === formattedDate
+            );
+            return hasReport ? { className: "bg-green-500 text-white" } : {};
+          }}
+          className="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-200"
+        />
 
-      {modalData && (
-        <div className="modal bg-gray-100 p-6 shadow-lg rounded mt-4">
-          <div className="flex justify-between">
-            <a href={`http://localhost:3000/forms/${role.toLowerCase()}/${modalData.id}/get`} className="text-blue-500 hover:text-blue-700 font-medium">
-              مشاهده
-            </a>
-            <a href={`http://localhost:3000/forms/${role.toLowerCase()}/${modalData.id}/edit`} className="text-green-500 hover:text-green-700 font-medium">
-              به روز رسانی
-            </a>
-            <button onClick={handleDelete} className="text-red-500 hover:text-red-700 font-medium">
-              حذف
-            </button>
+        {modalData && (
+          <div className="modal bg-gray-100 p-6 shadow-lg rounded mt-4">
+            <div className="flex justify-between">
+              <a
+                href={`http://localhost:3000/forms/${role.toLowerCase()}/${
+                  modalData.id
+                }/get`}
+                className="text-blue-500 hover:text-blue-700 font-medium"
+              >
+                مشاهده
+              </a>
+              {userAccess > 3 && (
+                <>
+                  <a
+                    href={`http://localhost:3000/forms/${role.toLowerCase()}/${
+                      modalData.id
+                    }/edit`}
+                    className="text-green-500 hover:text-green-700 font-medium"
+                  >
+                    به روز رسانی
+                  </a>
+                  <button
+                    onClick={handleDelete}
+                    className="text-red-500 hover:text-red-700 font-medium"
+                  >
+                    حذف
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {modalData === null && selectedDate && (
-        <div className="modal bg-gray-100 p-6 shadow-lg rounded mt-4 text-center">
-          <p className="text-gray-700">گزارشی در این تاریخ ثبت نشده است.</p>
-          <button onClick={handleCreateNewReport} className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
-            ایجاد گزارش جدید
-          </button>
-        </div>
-      )}
-    </div>
+        {modalData === null && selectedDate && (
+          <div className="modal bg-gray-100 p-6 shadow-lg rounded mt-4 text-center">
+            <p className="text-gray-700">گزارشی در این تاریخ ثبت نشده است.</p>
+            {userAccess > 3 && (
+              <>
+                <button
+                  onClick={handleCreateNewReport}
+                  className="mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                  ایجاد گزارش جدید
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </DefaultLayout>
   );
 };
 
 export default FormElements;
-
