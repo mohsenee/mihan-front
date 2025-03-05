@@ -13,6 +13,7 @@ export const fetchUserData = async (dispatch: AppDispatch, token: string) => {
     if (response.ok) {
       const data = await response.json();
       dispatch(setUserName(data.userName));
+      localStorage.setItem('userId', data.userId);
       localStorage.setItem('userName', data.userName);
       localStorage.setItem('role', data.role);
       localStorage.setItem('access', data.access.toString());
