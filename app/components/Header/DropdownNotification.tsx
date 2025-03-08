@@ -18,7 +18,6 @@ const roleMapping: { [key: string]: string } = {
 
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [userId, setUserId] = useState("");
@@ -26,15 +25,19 @@ const DropdownNotification = () => {
 
   useEffect(() => {
     const id = localStorage.getItem("userId");
-
-    if (id) {
-      setUserId(id);
-    }
+  
     if (!id) {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
     }
+  
+    setUserId(id); // Set userId first
+  }, []);
+
+  useEffect(() => {
+
+    if (!userId) return;
 
     const fetchNotifications = async () => {
       try {
@@ -45,8 +48,7 @@ const DropdownNotification = () => {
         if (response.ok) {
           const data = await response.json();
           setNotifications(data);
-          setNotificationCount(data.length); // Store notification count
-          setNotifying(data.length > 0);
+          setNotificationCount(data.length);
         }
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
@@ -61,7 +63,6 @@ const DropdownNotification = () => {
       <li>
         <Link
           onClick={() => {
-            setNotifying(false);
             setNotificationCount(0); // Reset count when dropdown opens
             setDropdownOpen(!dropdownOpen);
           }}
