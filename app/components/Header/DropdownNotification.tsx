@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import ClickOutside from "../ClickOutside";
 import { useRouter } from "next/router";
@@ -20,56 +20,76 @@ const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [hasOpenedDropdown, setHasOpenedDropdown] = useState(false);
   const [userId, setUserId] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     const id = localStorage.getItem("userId");
-  
-    if (!id) {
+    if (id) {
+      setUserId(id);
+    } else {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
     }
-  
-    setUserId(id); // Set userId first
-  }, []);
+  }, [router]);
+
+  // Fetch notifications and update pagination data.
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/forms/getMessageByUserId?userId=${userId}&page=${currentPage}&limit=10`,
+        { method: "GET" }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.messages); // Update the notifications for the current page
+        setTotalPages(Math.ceil(data.total / 10)); // Calculate total pages
+        
+        // Only update the notification count if the dropdown hasn't been opened yet.
+        if (!hasOpenedDropdown) {
+          setNotificationCount(data.total);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  }, [userId, currentPage, hasOpenedDropdown]);
 
   useEffect(() => {
+    if (userId) {
+      fetchNotifications();
+    }
+  }, [userId, currentPage, fetchNotifications]);
 
-    if (!userId) return;
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
-    const fetchNotifications = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8000/forms/getMessageByUserId?userId=${userId}`,
-          { method: "GET" }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setNotifications(data);
-          setNotificationCount(data.length);
-        }
-      } catch (error) {
-        console.error("Failed to fetch notifications:", error);
-      }
-    };
-
-    fetchNotifications();
-  }, [userId]);
+  // When the notification icon is clicked, toggle the dropdown.
+  // Also, if opening for the first time, reset the count and mark that it’s been opened.
+  const handleNotificationClick = () => {
+    setDropdownOpen(!dropdownOpen);
+    if (!dropdownOpen && notificationCount > 0) {
+      setNotificationCount(0);
+      setHasOpenedDropdown(true);
+    }
+  };
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <li>
         <Link
-          onClick={() => {
-            setNotificationCount(0); // Reset count when dropdown opens
-            setDropdownOpen(!dropdownOpen);
-          }}
+          onClick={handleNotificationClick}
           href="#"
           className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
         >
-          {/* 🔔 Notification Count Badge */}
+          {/* Notification Count Badge */}
           <span
             className={`absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white ${
               notificationCount === 0 ? "hidden" : "block"
@@ -77,7 +97,6 @@ const DropdownNotification = () => {
           >
             {notificationCount}
           </span>
-
           <svg
             className="fill-current duration-300 ease-in-out"
             width="18"
@@ -96,9 +115,8 @@ const DropdownNotification = () => {
         {dropdownOpen && (
           <div className="absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80">
             <div className="px-4.5 py-3">
-              <h5 className="text-sm font-medium text-bodydark2">پیام ها</h5>
+              <h5 className="text-sm font-medium text-bodydark2 px-2">پیام ها</h5>
             </div>
-
             <ul className="flex h-auto flex-col overflow-y-auto">
               {notifications.length === 0 ? (
                 <li className="px-4.5 py-3 text-center text-sm text-bodydark2">
@@ -111,7 +129,7 @@ const DropdownNotification = () => {
                       className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
                       href="#"
                     >
-                      <p className="text-xs">
+                      <p className="text-xs px-2">
                         گزارش روزانه واحد {roleMapping[notification.role]} در تاریخ {notification.reportDate} ثبت نشده است
                       </p>
                     </Link>
@@ -119,12 +137,32 @@ const DropdownNotification = () => {
                 ))
               )}
             </ul>
+            {totalPages > 1 && (
+              <div className="mt-3 flex justify-center space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-blue-300"
+                >
+                  قبلی
+                </button>
+                <span className="px-4 py-2 text-sm text-bodydark2">
+                  صفحه {currentPage} از {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:bg-blue-300"
+                >
+                  بعدی
+                </button>
+              </div>
+            )}
           </div>
         )}
       </li>
     </ClickOutside>
   );
 };
-
 
 export default DropdownNotification;
