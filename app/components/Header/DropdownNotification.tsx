@@ -20,6 +20,7 @@ const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [userId, setUserId] = useState("");
   const router = useRouter();
 
@@ -39,14 +40,13 @@ const DropdownNotification = () => {
       try {
         const response = await fetch(
           `http://localhost:8000/forms/getMessageByUserId?userId=${userId}`,
-          {
-            method: "GET",
-          }
+          { method: "GET" }
         );
         if (response.ok) {
           const data = await response.json();
           setNotifications(data);
-          setNotifying(data.length > 0); // Set notifying to true if there are notifications
+          setNotificationCount(data.length); // Store notification count
+          setNotifying(data.length > 0);
         }
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
@@ -61,18 +61,20 @@ const DropdownNotification = () => {
       <li>
         <Link
           onClick={() => {
-            setNotifying(false); // Set notifying to false when the user opens the dropdown
+            setNotifying(false);
+            setNotificationCount(0); // Reset count when dropdown opens
             setDropdownOpen(!dropdownOpen);
           }}
           href="#"
           className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
         >
+          {/* 🔔 Notification Count Badge */}
           <span
-            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-meta-1 ${
-              notifying === false ? "hidden" : "inline"
+            className={`absolute -top-2 -right-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white ${
+              notificationCount === 0 ? "hidden" : "block"
             }`}
           >
-            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-meta-1 opacity-75"></span>
+            {notificationCount}
           </span>
 
           <svg
@@ -91,9 +93,7 @@ const DropdownNotification = () => {
         </Link>
 
         {dropdownOpen && (
-          <div
-            className={`absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80`}
-          >
+          <div className="absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80">
             <div className="px-4.5 py-3">
               <h5 className="text-sm font-medium text-bodydark2">پیام ها</h5>
             </div>
@@ -111,8 +111,7 @@ const DropdownNotification = () => {
                       href="#"
                     >
                       <p className="text-xs">
-                        گزارش روزانه واحد {roleMapping[notification.role]} در
-                        تاریخ {notification.reportDate} ثبت نشده است
+                        گزارش روزانه واحد {roleMapping[notification.role]} در تاریخ {notification.reportDate} ثبت نشده است
                       </p>
                     </Link>
                   </li>
@@ -125,5 +124,6 @@ const DropdownNotification = () => {
     </ClickOutside>
   );
 };
+
 
 export default DropdownNotification;
