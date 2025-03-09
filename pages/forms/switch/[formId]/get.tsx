@@ -4,6 +4,8 @@ import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import { useRouter } from "next/router";
+import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
+import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
 const role = 'Switch';
 
@@ -177,7 +179,21 @@ const SwitchReportForm: NextPage = () => {
   });
 
   return (
-    <div
+    <DefaultLayout>
+      <Breadcrumb
+        pages={[
+          {
+            name: "گزارشات روزانه",
+            path: `/forms/${role.toLowerCase()}/reports`,
+          },
+          {
+            name: "مشاهده گزارش ",
+            path: `/forms/${role.toLowerCase()}/get`,
+            disabled: true
+          },
+        ]}
+      />
+      <div
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: "url('/image/11.png')" }}
     >
@@ -372,6 +388,7 @@ const SwitchReportForm: NextPage = () => {
         </Formik>
       </div>
     </div>
+    </DefaultLayout>
   );
 };
 

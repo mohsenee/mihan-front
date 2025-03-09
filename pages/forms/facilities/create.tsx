@@ -9,6 +9,8 @@ import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
 import { useRouter } from "next/router";
+import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
+import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
 const role = 'Facilities';
 
@@ -147,7 +149,21 @@ const FacilitiesReportForm: NextPage = () => {
   });
 
   return (
-    <div
+   <DefaultLayout>
+    <Breadcrumb
+        pages={[
+          {
+            name: "گزارشات روزانه",
+            path: `/forms/${role.toLowerCase()}/reports`,
+          },
+          {
+            name: "گزارش جدید",
+            path: `/forms/${role.toLowerCase()}/create`,
+            disabled: true
+          },
+        ]}
+      />
+       <div
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: "url('/image/11.png')" }}
     >
@@ -288,6 +304,7 @@ const FacilitiesReportForm: NextPage = () => {
         </Formik>
       </div>
     </div>
+   </DefaultLayout>
   );
 };
 

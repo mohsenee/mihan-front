@@ -8,6 +8,8 @@ import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
+import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
+import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 
 const role = "Switch";
 
@@ -45,7 +47,7 @@ const SwitchReportForm: NextPage = () => {
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [userName, setUserName] = useState<string | null>("");
 
-  const router = useRouter(); 
+  const router = useRouter();
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -143,10 +145,9 @@ const SwitchReportForm: NextPage = () => {
 
     fetchNames();
 
-    if(localStorage.getItem("userName")){
-      setUserName(localStorage.getItem("userName"))
-    }
-    else{
+    if (localStorage.getItem("userName")) {
+      setUserName(localStorage.getItem("userName"));
+    } else {
       alert("لطفا اول وارد سایت شوید");
       router.push("/");
       return;
@@ -159,7 +160,7 @@ const SwitchReportForm: NextPage = () => {
       day: values.day,
       names: values.names.join(", "),
       comments: values.comments,
-      createdBy: userName
+      createdBy: userName,
     };
 
     values.checklistItems.forEach((item) => {
@@ -171,15 +172,14 @@ const SwitchReportForm: NextPage = () => {
     });
 
     try {
-
       const checkExistForm = await fetch(
         `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
       );
       const data = await checkExistForm.json();
-      
-      if(data){
-        alert('قبلا در این تاریخ گزارش ثبت شده است')
-      }else{
+
+      if (data) {
+        alert("قبلا در این تاریخ گزارش ثبت شده است");
+      } else {
         const createdForm = await fetch(
           "http://localhost:8000/forms/createForm",
           {
@@ -191,7 +191,7 @@ const SwitchReportForm: NextPage = () => {
             body: JSON.stringify({ role: role, form: mappedValues }),
           }
         );
-  
+
         if (createdForm.ok) {
           alert("Data sent successfully!");
           router.push(`/forms/${role.toLowerCase()}/reports`);
@@ -232,245 +232,267 @@ const SwitchReportForm: NextPage = () => {
   });
 
   return (
-    <div
-      className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/image/11.png')" }}
-    >
-      <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
-        <Formik
-          initialValues={{
-            reportDate: currentDate,
-            day: currentDay,
-            comments: "",
-            names: [],
-            checklistItems: checklistItems,
-            capacityItems: capacityItems,
-          }}
-          validationSchema={validationSchema}
-          enableReinitialize
-          onSubmit={handleSubmit}
-          validateOnSubmit={true}
-        >
-          {({ setFieldValue, values, validateField, isValid }) => (
-            <Form>
-              <h4 className="text-center mb-4 font-bold text-lg">
-                فرم گزارش روزانه دیتا و سوئیچ
-              </h4>
+    <DefaultLayout>
+      <Breadcrumb
+        pages={[
+          {
+            name: "گزارشات روزانه",
+            path: `/forms/${role.toLowerCase()}/reports`,
+          },
+          {
+            name: "گزارش جدید",
+            path: `/forms/${role.toLowerCase()}/create`,
+            disabled: true
+          },
+        ]}
+      />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Report Date */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    تاریخ گزارش
-                  </label>
-                  <Field name="reportDate">
-                    {({ field, form }: FieldProps) => (
-                      <DatePicker
-                        {...field}
-                        value={field.value || currentDate}
-                        onChange={(date: any) =>
-                          handleDateChange(date, setFieldValue)
-                        }
-                        // onChange={(date: any) => {
-                        //   const formattedDate = date
-                        //     ? date.format("YYYY/MM/DD")
-                        //     : "";
-                        //   form.setFieldValue("reportDate", formattedDate);
-                        // }}
-                        format="YYYY/MM/DD"
-                        placeholder="تاریخ را انتخاب کنید"
-                        className="w-full border rounded-md p-2"
-                        locale={fa}
-                        calendar={persian}
-                      />
-                    )}
-                  </Field>
-                  <ErrorMessage
-                    name="reportDate"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
+      <div
+        className="flex justify-center items-center min-h-screen bg-cover bg-center"
+        style={{ backgroundImage: "url('/image/11.png')" }}
+      >
+        <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
+          <Formik
+            initialValues={{
+              reportDate: currentDate,
+              day: currentDay,
+              comments: "",
+              names: [],
+              checklistItems: checklistItems,
+              capacityItems: capacityItems,
+            }}
+            validationSchema={validationSchema}
+            enableReinitialize
+            onSubmit={handleSubmit}
+            validateOnSubmit={true}
+          >
+            {({ setFieldValue, values, validateField, isValid }) => (
+              <Form>
+                <h4 className="text-center mb-4 font-bold text-lg">
+                  فرم گزارش روزانه دیتا و سوئیچ
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Report Date */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      تاریخ گزارش
+                    </label>
+                    <Field name="reportDate">
+                      {({ field, form }: FieldProps) => (
+                        <DatePicker
+                          {...field}
+                          value={field.value || currentDate}
+                          onChange={(date: any) =>
+                            handleDateChange(date, setFieldValue)
+                          }
+                          // onChange={(date: any) => {
+                          //   const formattedDate = date
+                          //     ? date.format("YYYY/MM/DD")
+                          //     : "";
+                          //   form.setFieldValue("reportDate", formattedDate);
+                          // }}
+                          format="YYYY/MM/DD"
+                          placeholder="تاریخ را انتخاب کنید"
+                          className="w-full border rounded-md p-2"
+                          locale={fa}
+                          calendar={persian}
+                        />
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name="reportDate"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Day of Week */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      روز هفته
+                    </label>
+                    <Field
+                      as="select"
+                      name="day"
+                      value={values.day || currentDay}
+                      onChange={(e: any) =>
+                        setFieldValue("day", e.target.value)
+                      }
+                      className="w-full border rounded-md p-2"
+                    >
+                      {daysOfWeek.map((day) => (
+                        <option key={day.value} value={day.value}>
+                          {day.label}
+                        </option>
+                      ))}
+                    </Field>
+                    <ErrorMessage
+                      name="day"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Shift Names */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      اسامی شیفت
+                    </label>
+                    <Select
+                      isMulti
+                      options={namesOptions}
+                      value={values.names.map((name) => ({
+                        label: name,
+                        value: name,
+                      }))}
+                      onChange={(selected: OnChangeValue<any, any>) => {
+                        setFieldValue(
+                          "names",
+                          selected ? selected.map((opt: any) => opt.value) : []
+                        );
+                      }}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="names"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
                 </div>
 
-                {/* Day of Week */}
-                <div>
+                {/* Checklist Section */}
+                <div className="mt-6">
+                  <h5 className="font-bold mb-2">
+                    چک لیست وضعیت سخت افزاری و نرم افزاری
+                  </h5>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          خلاصه وضعیت سیستم
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نرمال
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              type="checkbox"
+                              checked={item.selected}
+                              onChange={() =>
+                                setFieldValue(
+                                  `checklistItems[${index}].selected`,
+                                  !item.selected
+                                )
+                              }
+                              className="w-5 h-5"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Capacity Section */}
+
+                <div className="mt-6">
+                  <h5 className="font-bold mb-2">شرایط محیطی و ظرفیت فایل</h5>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          شرایط محیطی
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          مقدار
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.capacityItems.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <Field
+                              name={`capacityItems[${index}].quantity`}
+                              type="text"
+                              value={item.quantity}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) => {
+                                const value = e.target.value;
+                                setFieldValue(
+                                  `capacityItems[${index}].quantity`,
+                                  value
+                                );
+                                validateField(
+                                  `capacityItems[${index}].quantity`
+                                );
+                              }}
+                              className="w-full border rounded-md p-2"
+                            />
+                            <ErrorMessage
+                              name={`capacityItems[${index}].quantity`}
+                              component="div"
+                              className="text-red-500 text-xs mt-1"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6">
                   <label className="block text-sm font-medium mb-1">
-                    روز هفته
+                    گزارش
                   </label>
                   <Field
-                    as="select"
-                    name="day"
-                    value={values.day || currentDay}
-                    onChange={(e: any) => setFieldValue("day", e.target.value)}
+                    as="textarea"
+                    name="comments"
+                    rows={3}
                     className="w-full border rounded-md p-2"
+                  />
+                  <ErrorMessage
+                    name="comments"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+
+                <div className="mt-4 text-center">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                    disabled={!isValid}
                   >
-                    {daysOfWeek.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
-                    ))}
-                  </Field>
-                  <ErrorMessage
-                    name="day"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
+                    ثبت
+                  </button>
                 </div>
-
-                {/* Shift Names */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    اسامی شیفت
-                  </label>
-                  <Select
-                    isMulti
-                    options={namesOptions}
-                    value={values.names.map((name) => ({
-                      label: name,
-                      value: name,
-                    }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
-                      setFieldValue(
-                        "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
-                      );
-                    }}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="names"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-              </div>
-
-              {/* Checklist Section */}
-              <div className="mt-6">
-                <h5 className="font-bold mb-2">
-                  چک لیست وضعیت سخت افزاری و نرم افزاری
-                </h5>
-                <table className="w-full table-auto border-collapse border border-gray-300">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                        خلاصه وضعیت سیستم
-                      </th>
-                      <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                        نرمال
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {values.checklistItems.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="odd:bg-gray-50 even:bg-gray-100"
-                      >
-                        <td className="border border-gray-300 p-2">
-                          {item.label}
-                        </td>
-                        <td className="border border-gray-300 p-2 text-center">
-                          <Field
-                            type="checkbox"
-                            checked={item.selected}
-                            onChange={() =>
-                              setFieldValue(
-                                `checklistItems[${index}].selected`,
-                                !item.selected
-                              )
-                            }
-                            className="w-5 h-5"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Capacity Section */}
-
-              <div className="mt-6">
-                <h5 className="font-bold mb-2">شرایط محیطی و ظرفیت فایل</h5>
-                <table className="w-full table-auto border-collapse border border-gray-300">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                        شرایط محیطی
-                      </th>
-                      <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                        مقدار
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {values.capacityItems.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="odd:bg-gray-50 even:bg-gray-100"
-                      >
-                        <td className="border border-gray-300 p-2">
-                          {item.label}
-                        </td>
-                        <td className="border border-gray-300 p-2">
-                          <Field
-                            name={`capacityItems[${index}].quantity`}
-                            type="text"
-                            value={item.quantity}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => {
-                              const value = e.target.value;
-                              setFieldValue(
-                                `capacityItems[${index}].quantity`,
-                                value
-                              );
-                              validateField(`capacityItems[${index}].quantity`);
-                            }}
-                            className="w-full border rounded-md p-2"
-                          />
-                          <ErrorMessage
-                            name={`capacityItems[${index}].quantity`}
-                            component="div"
-                            className="text-red-500 text-xs mt-1"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-1">گزارش</label>
-                <Field
-                  as="textarea"
-                  name="comments"
-                  rows={3}
-                  className="w-full border rounded-md p-2"
-                />
-                <ErrorMessage
-                  name="comments"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-
-              <div className="mt-4 text-center">
-                <button
-                  type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                  disabled={!isValid}
-                >
-                  ثبت
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
-    </div>
+    </DefaultLayout>
   );
 };
 

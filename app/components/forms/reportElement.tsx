@@ -5,6 +5,7 @@ import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
 import DefaultLayout from "../Layouts/DefaultLayout";
+import Breadcrumb from "../Breadcrumbs/Breadcrumb";
 
 interface Report {
   id: string;
@@ -123,6 +124,15 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
 
   return (
     <DefaultLayout>
+      <Breadcrumb
+        pages={[
+          {
+            name: "گزارشات روزانه",
+            path: `/forms/${role.toLowerCase()}/reports`,
+            disabled: true
+          },
+        ]}
+      />
       <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-200 mt-10">
         <h1 className="mb-6 text-2xl font-semibold text-gray-800">
           فرم های گزارش روزانه واحد {title}
