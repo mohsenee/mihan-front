@@ -48,13 +48,6 @@ const DropdownUser = () => {
         className="flex items-center gap-4"
         href="#"
       >
-        <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-black dark:text-white">
-             {userName}
-          </span>
-          <span className="block text-xs"></span>
-        </span>
-
         <svg
           className="hidden fill-current sm:block"
           width="12"
@@ -70,6 +63,12 @@ const DropdownUser = () => {
             fill=""
           />
         </svg>
+        <span className="hidden text-right lg:block">
+          <span className="block text-sm font-medium text-black dark:text-white">
+             {userName}
+          </span>
+          <span className="block text-xs"></span>
+        </span>
       </Link>
 
       {/* <!-- Dropdown Start --> */}
@@ -81,7 +80,7 @@ const DropdownUser = () => {
             <li>
               <Link
                 href="#"
-                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary"
               >
                 <svg
                   className="fill-current"
@@ -107,7 +106,7 @@ const DropdownUser = () => {
             <li>
               <Link
                 href="#"
-                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary"
               >
                 <svg
                   className="fill-current"
@@ -133,7 +132,7 @@ const DropdownUser = () => {
             <li>
               <Link
                 href="/"
-                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary"
               >
                <svg
               className="fill-current"

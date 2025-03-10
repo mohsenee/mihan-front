@@ -286,12 +286,6 @@ const SwitchReportForm: NextPage = () => {
                           onChange={(date: any) =>
                             handleDateChange(date, setFieldValue)
                           }
-                          // onChange={(date: any) => {
-                          //   const formattedDate = date
-                          //     ? date.format("YYYY/MM/DD")
-                          //     : "";
-                          //   form.setFieldValue("reportDate", formattedDate);
-                          // }}
                           format="YYYY/MM/DD"
                           placeholder="تاریخ را انتخاب کنید"
                           className="w-full border rounded-md p-2"
