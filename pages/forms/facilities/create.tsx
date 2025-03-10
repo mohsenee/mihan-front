@@ -270,7 +270,10 @@ const FacilitiesReportForm: NextPage = () => {
 
               {/* Checklist Section */}
               <div className="mt-6">
-              <FacilitiesDynamicTable onTableDataChange={setDynamicTableData} />
+              <FacilitiesDynamicTable onTableDataChange={setDynamicTableData}
+               initialData={dynamicTableData} // Pass initial empty rows if needed
+               isReadOnly={false} // Set to false to allow editing
+               />
               </div>
 
               <div className="mt-6">

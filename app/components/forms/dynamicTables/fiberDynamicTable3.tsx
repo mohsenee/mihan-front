@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface TableRow {
   contractorName: string;
@@ -19,15 +19,22 @@ interface DynamicTableProps {
   isReadOnly?: boolean;
 }
 
-const FiberDynamicTable3: React.FC<DynamicTableProps> = ({ onTableDataChange, initialData = [], isReadOnly = false }) => {
- const [rows, setRows] = useState<TableRow[]>(initialData);
+const FiberDynamicTable3: React.FC<DynamicTableProps> = ({
+  onTableDataChange,
+  initialData = [],
+  isReadOnly = false,
+}) => {
+  const [rows, setRows] = useState<TableRow[]>(initialData);
 
- useEffect(() => {
-     // When initialData prop changes, update the state
-     setRows(initialData);
-   }, [initialData]);
-   
-  const handleInputChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    // When initialData prop changes, update the state
+    setRows(initialData);
+  }, [initialData]);
+
+  const handleInputChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const { name, value } = event.target;
     const updatedRows = [...rows];
     updatedRows[index] = { ...updatedRows[index], [name]: value };
@@ -36,7 +43,21 @@ const FiberDynamicTable3: React.FC<DynamicTableProps> = ({ onTableDataChange, in
   };
 
   const addRow = () => {
-    setRows([...rows, { contractorName: "", status: "", phoneContractor: "", fromKm: "", toKm: "", bridgesCount: '', polesCount: "" , pondsCount: "", routeLength: "", suggestions: ""}]);
+    setRows([
+      ...rows,
+      {
+        contractorName: "",
+        status: "",
+        phoneContractor: "",
+        fromKm: "",
+        toKm: "",
+        bridgesCount: "",
+        polesCount: "",
+        pondsCount: "",
+        routeLength: "",
+        suggestions: "",
+      },
+    ]);
   };
 
   const removeRow = (index: number) => {
@@ -50,7 +71,7 @@ const FiberDynamicTable3: React.FC<DynamicTableProps> = ({ onTableDataChange, in
       <table className="w-full border-collapse border border-gray-300">
         <thead>
           <tr>
-          <th className="border p-2">مشخصات پیمانکار</th>
+            <th className="border p-2">مشخصات پیمانکار</th>
             <th className="border p-2">وضعیت استعلام</th>
             <th className="border p-2">شماره همراه پیمانکار</th>
             <th className="border p-2">از کیلومتر</th>

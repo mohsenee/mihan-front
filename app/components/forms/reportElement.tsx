@@ -100,8 +100,9 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
   }, [role]);
 
   const handleDateClick = (date: any) => {
-    const formattedDate = date.format();
+    let formattedDate = date.format();
     const report = reports.find((r) => r.reportDate === formattedDate);
+    formattedDate = formattedDate.replace('/','-').replace('/','-')
     setSelectedDate(formattedDate);
     setModalData(report || null);
   };
@@ -119,7 +120,7 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
   };
 
   const handleCreateNewReport = () => {
-    window.location.href = `http://localhost:3000/forms/${role.toLowerCase()}/create`;
+    window.location.href = `http://localhost:3000/forms/${role.toLowerCase()}/create/${selectedDate}`;
   };
 
   return (
