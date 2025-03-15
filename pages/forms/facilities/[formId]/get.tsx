@@ -2,15 +2,13 @@ import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
-import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
-import persian from "react-date-object/calendars/persian";
-import fa from "react-date-object/locales/persian_fa";
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const role = "Facilities";
 
@@ -128,6 +126,33 @@ const FacilitiesReportForm: NextPage = () => {
     names: Yup.array().min(1, "اسامی شیفت الزامی است"),
   });
 
+  const handleDownloadPDF = async () => {
+    const formElement = document.getElementById("form-container");
+
+    if (!formElement) {
+      console.error("Form not found!");
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(formElement, {
+        scale: 2, // Increases resolution for better clarity
+        useCORS: true, // Prevents cross-origin issues
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 190; // Adjust width for better spacing
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save("SwitchReport.pdf");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb
@@ -139,119 +164,129 @@ const FacilitiesReportForm: NextPage = () => {
           {
             name: "مشاهده گزارش ",
             path: `/forms/${role.toLowerCase()}/get`,
-            disabled: true
+            disabled: true,
           },
         ]}
       />
 
-<div
-      className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/image/11.png')" }}
-    >
-      <div className="w-4/5 max-w-15xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
-        <Formik
-          initialValues={{
-            reportDate: currentDate,
-            day: currentDay,
-            comments: "",
-            names: [],
-          }}
-          validationSchema={validationSchema}
-          enableReinitialize
-          onSubmit={handleSubmit}
-          validateOnSubmit={true}
+      <div className="text-center mt-4">
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-600"
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
-            <Form>
-              <h4 className="text-center mb-4 font-bold text-lg">
-                فــرم ثبت عملكـــرد كليـــه امور اجرايي PM و EM تاسیسات
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Report Date */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    تاریخ گزارش
-                  </label>
-                  <Field
-                    value={currentDate}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="reportDate"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-
-                {/* Day of Week */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    روز هفته
-                  </label>
-                  <Field
-                    value={currentDay}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="day"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-
-                {/* Shift Names */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    اسامی شیفت
-                  </label>
-                  <Field
-                    value={names}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="names"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-              </div>
-
-              {/* Checklist Section */}
-              <div className="mt-6">
-                {dynamicTableData.length ? (
-                  <FacilitiesDynamicTable
-                    onTableDataChange={setDynamicTableData}
-                    initialData={dynamicTableData}
-                    isReadOnly={true}
-                  />
-                ) : (
-                  ""
-                )}
-              </div>
-
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-1">
-                  توضیحات
-                </label>
-                <Field
-                  as="textarea"
-                  name="comments"
-                  value={comment}
-                  rows={3}
-                  className="w-full border rounded-md p-2"
-                />
-                <ErrorMessage
-                  name="comments"
-                  component="div"
-                  className="text-red-500 text-xs mt-1"
-                />
-              </div>
-            </Form>
-          )}
-        </Formik>
+          دانلود PDF
+        </button>
       </div>
-    </div>
+
+      <div
+        id="form-container"
+        className="flex justify-center items-center min-h-screen bg-cover bg-center"
+        // style={{ backgroundImage: "url('/image/11.png')" }}
+      >
+        <div className="w-4/5 max-w-15xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
+          <Formik
+            initialValues={{
+              reportDate: currentDate,
+              day: currentDay,
+              comments: "",
+              names: [],
+            }}
+            validationSchema={validationSchema}
+            enableReinitialize
+            onSubmit={handleSubmit}
+            validateOnSubmit={true}
+          >
+            {({ setFieldValue, values, validateField, isValid }) => (
+              <Form>
+                <h4 className="text-center mb-4 font-bold text-lg">
+                  فــرم ثبت عملكـــرد كليـــه امور اجرايي PM و EM تاسیسات
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Report Date */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      تاریخ گزارش
+                    </label>
+                    <Field
+                      value={currentDate}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="reportDate"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Day of Week */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      روز هفته
+                    </label>
+                    <Field
+                      value={currentDay}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="day"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Shift Names */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      اسامی شیفت
+                    </label>
+                    <Field
+                      value={names}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="names"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Checklist Section */}
+                <div className="mt-6">
+                  {dynamicTableData.length ? (
+                    <FacilitiesDynamicTable
+                      onTableDataChange={setDynamicTableData}
+                      initialData={dynamicTableData}
+                      isReadOnly={true}
+                    />
+                  ) : (
+                    ""
+                  )}
+                </div>
+
+                <div className="mt-6">
+                  <label className="block text-sm font-medium mb-1">
+                    توضیحات
+                  </label>
+                  <Field
+                    as="textarea"
+                    name="comments"
+                    value={comment}
+                    rows={3}
+                    className="w-full border rounded-md p-2"
+                  />
+                  <ErrorMessage
+                    name="comments"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
     </DefaultLayout>
   );
 };

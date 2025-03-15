@@ -7,6 +7,8 @@ import MuxDynamicTable2 from "@/app/components/forms/dynamicTables/muxDynamicTab
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const role = 'Mux';
 
@@ -333,6 +335,33 @@ const MuxReportForm: NextPage = () => {
     names: Yup.array().min(1, "اسامی شیفت الزامی است"),
   });
 
+  const handleDownloadPDF = async () => {
+    const formElement = document.getElementById("form-container");
+
+    if (!formElement) {
+      console.error("Form not found!");
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(formElement, {
+        scale: 2, // Increases resolution for better clarity
+        useCORS: true, // Prevents cross-origin issues
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 190; // Adjust width for better spacing
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save("SwitchReport.pdf");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
+  };
+
   return (
     <DefaultLayout>
       <Breadcrumb
@@ -349,9 +378,19 @@ const MuxReportForm: NextPage = () => {
         ]}
       />
 
+<div className="text-center mt-4">
+      <button 
+        onClick={handleDownloadPDF} 
+        className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-600"
+      >
+        دانلود PDF
+      </button>
+    </div>
+
 <div
+ id="form-container"
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/image/11.png')" }}
+      // style={{ backgroundImage: "url('/image/11.png')" }}
     >
       <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
         <Formik

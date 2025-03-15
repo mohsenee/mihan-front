@@ -238,7 +238,7 @@ const FiberReportForm: NextPage = () => {
       />
       <div
         className="flex justify-center items-center min-h-screen bg-cover bg-center"
-        style={{ backgroundImage: "url('/image/11.png')" }}
+        // style={{ backgroundImage: "url('/image/11.png')" }}
       >
         <div className="w-4.5/5 max-w-20xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
           <Formik

@@ -199,7 +199,7 @@ const SwitchReportForm: NextPage = () => {
   return (
     <div
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/image/11.png')" }}
+      // style={{ backgroundImage: "url('/image/11.png')" }}
     >
       <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
         <Formik

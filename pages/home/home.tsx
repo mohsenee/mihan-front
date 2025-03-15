@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
+import Link from "next/link";
 
 const Home = () => {
   const [userName, setUserName] = useState("");
@@ -40,65 +41,68 @@ const Home = () => {
 
   return (
     <DefaultLayout>
-       <div className="flex-grow flex items-center justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-11/12 mx-auto my-16">
+      <div className="flex-grow flex items-center justify-center mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-11/12 mx-auto my-16 ">
           {/* Card 1 */}
-          <a href="/forms/switch/reports" className="text-white no-underline">
-            <div className="bg-blue-600 text-center p-6 rounded-md shadow-md">
+          <Link
+            href="/forms/switch/reports"
+            className="text-white no-underline"
+          >
+            <div className="bg-blue-600 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">دیتا و سوئیچ</h3>
               <p>Data&Switch</p>
             </div>
-          </a>
+          </Link>
 
           {/* Card 2 */}
-          <a href="/forms/mux/reports" className="text-white no-underline">
-            <div className="bg-blue-500 text-center p-6 rounded-md shadow-md">
+          <Link href="/forms/mux/reports" className="text-white no-underline">
+            <div className="bg-blue-500 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">انتقال</h3>
               <p>Mux</p>
             </div>
-          </a>
+          </Link>
 
           {/* Card 3 */}
-          <a href="/forms/fiber/reports" className="text-white no-underline">
-            <div className="bg-blue-400 text-center p-6 rounded-md shadow-md">
+          <Link href="/forms/fiber/reports" className="text-white no-underline">
+            <div className="bg-blue-400 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">فیبر نوری</h3>
               <p>fiber</p>
             </div>
-          </a>
+          </Link>
 
           {/* Card 4 */}
-          <a
+          <Link
             href="/forms/facilities/reports"
             className="text-white no-underline"
           >
-            <div className="bg-cyan-600 text-center p-6 rounded-md shadow-md">
+            <div className="bg-blue-600 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">تاسیسات</h3>
               <p>Facilities</p>
             </div>
-          </a>
+          </Link>
 
           {/* Card 5 */}
-          <a href="/forms/power/reports" className="text-white no-underline">
-            <div className="bg-cyan-500 text-center p-6 rounded-md shadow-md">
+          <Link href="/forms/power/reports" className="text-white no-underline">
+            <div className="bg-blue-500 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">پاور</h3>
               <p>Power</p>
             </div>
-          </a>
+          </Link>
 
           {/* Card 6 */}
-          <a
+          <Link
             href="http://localhost:8080/about"
             className="text-white no-underline"
           >
-            <div className="bg-cyan-400 text-center p-6 rounded-md shadow-md">
+            <div className="bg-blue-400 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">مالی و اداری</h3>
               <p>$$</p>
             </div>
-          </a>
+          </Link>
         </div>
       </div>
-
     </DefaultLayout>
+
     // <div className="flex flex-col min-h-screen">
     //   {/* Header */}
     //   <div className="bg-gray-800 text-white py-3 flex">

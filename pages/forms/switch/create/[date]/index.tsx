@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import moment from "moment-jalaali";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
+import FileUpload from "@/app/components/FileUpload";
 
 const role = "Switch";
 
@@ -26,6 +27,7 @@ interface FormState {
   names: string[];
   checklistItems: ChecklistItem[];
   capacityItems: CapacityItem[];
+  files: File[];
 }
 
 interface ChecklistItem {
@@ -53,6 +55,7 @@ const SwitchReportForm: NextPage = () => {
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [userName, setUserName] = useState<string | null>("");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -176,8 +179,10 @@ const SwitchReportForm: NextPage = () => {
     }
   }, []);
 
+  // useEffect(()=>{console.log("**********************"); console.log(uploadedFiles)},[uploadedFiles])
+
   const handleSubmit = async (values: FormState) => {
-    const mappedValues: { [key: string]: string | boolean | number | null } = {
+    const mappedValues: { [key: string]: string | boolean | number | null | File[] } = {
       reportDate: values.reportDate,
       day: values.day,
       names: values.names.join(", "),
@@ -192,6 +197,9 @@ const SwitchReportForm: NextPage = () => {
     values.capacityItems.forEach((item) => {
       mappedValues[item.task] = item.quantity;
     });
+
+    const formData = new FormData();
+  
 
     try {
       const checkExistForm = await fetch(
@@ -226,6 +234,69 @@ const SwitchReportForm: NextPage = () => {
       alert("Failed to send data.");
     }
   };
+
+  // const handleSubmit = async (values: FormState) => {
+  //   // Create a FormData object to send the form data
+  //   const formData = new FormData();
+  
+  //   // Append form data to FormData object
+  //   formData.append("role", role); // Add the role
+  //   formData.append("reportDate", values.reportDate); // Add the reportDate
+  //   formData.append("day", values.day); // Add the day
+  //   formData.append("names", values.names.join(", ")); // Add the names as a comma-separated string
+  //   formData.append("comments", values.comments); // Add the comments
+  //   formData.append("createdBy", userName?? ""); // Add the createdBy
+  
+  //   // Append checklistItems (if any)
+  //   values.checklistItems.forEach((item) => {
+  //     formData.append(item.task, String(item.selected));
+  //   });
+  
+  //   // Append capacityItems (if any)
+  //   values.capacityItems.forEach((item) => {
+  //     formData.append(item.task, String(item.quantity));
+  //   });
+  
+  //   // Append the files
+  //   uploadedFiles.forEach((file) => {
+  //     formData.append("files", file); // Add each file to the FormData object
+  //   });
+
+  //   formData.forEach((a,b)=>{console.log(a,b)})
+  
+  //   try {
+  //     // Check if the form already exists for the given role and reportDate
+  //     const checkExistForm = await fetch(
+  //       `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
+  //     );
+  //     const data = await checkExistForm.json();
+  
+  //     if (data) {
+  //       alert("قبلا در این تاریخ گزارش ثبت شده است");
+  //     } else {
+  //       // Send the form data to the server using the FormData object
+  //       const createdForm = await fetch("http://localhost:8000/forms/createForm", {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
+  //         },
+  //         body: formData, // Pass the FormData object as the body
+  //       });
+  
+  //       if (createdForm.ok) {
+  //         alert("Data sent successfully!");
+  //         router.push(`/forms/${role.toLowerCase()}/reports`);
+  //       } else {
+  //         alert("Failed to send data.");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     alert("Failed to send data.");
+  //   }
+  // };
+  
+
 
   const handleDateChange = (date: any, setFieldValue: any) => {
     const formattedDate = date ? date.format("YYYY/MM/DD") : "";
@@ -271,7 +342,7 @@ const SwitchReportForm: NextPage = () => {
 
       <div
         className="flex justify-center items-center min-h-screen bg-cover bg-center"
-        style={{ backgroundImage: "url('/image/11.png')" }}
+        // style={{ backgroundImage: "url('/image/11.png')" }}
       >
         <div className="w-3/5 max-w-4xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
           <Formik
@@ -282,6 +353,7 @@ const SwitchReportForm: NextPage = () => {
               names: [],
               checklistItems: checklistItems,
               capacityItems: capacityItems,
+              files: []
             }}
             validationSchema={validationSchema}
             enableReinitialize
@@ -377,6 +449,8 @@ const SwitchReportForm: NextPage = () => {
                     />
                   </div>
                 </div>
+
+                <FileUpload onFilesUploaded={setUploadedFiles} />
 
                 {/* Checklist Section */}
                 <div className="mt-6">

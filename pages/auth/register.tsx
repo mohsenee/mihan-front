@@ -15,6 +15,8 @@ import Input from "@/app/components/shared/form/input";
 import { fetchUserData } from "../../app/utils/fetchUserData";
 import { AppDispatch } from "../../app/store/store";
 import { useDispatch } from "react-redux";
+import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
+import Link from "next/link";
 
 interface RegisterFormValues {
   name: string;
@@ -162,20 +164,20 @@ const Register: NextPage = () => {
 
   return (
     <>
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-10 bg-gradient-to-b from-blue-50 to-indigo-100 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-3xl/9 font-bold tracking-tight text-blue-700 ">
+          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-blue-700 ">
             ساخت حساب کاربری در سامانه میهن
           </h2>
 
           <p className="mt-10 text-center text-sm/6 text-blue-500">
             عضو سامانه هستید؟{" "}
-            <a
+            <Link
               href="/"
               className="font-semibold text-blue-700 hover:text-blue-500"
             >
               وارد شوید
-            </a>
+            </Link>
           </p>
         </div>
 
@@ -186,7 +188,7 @@ const Register: NextPage = () => {
             validationSchema={registerFormValidationSchema}
           >
             {({ values, setFieldValue }) => (
-              <Form className="space-y-6">
+              <Form className="space-y-6 bg-white p-8 rounded-xl shadow-lg">
                 <div>
                   <Input name="name" label="نام و نام خانوادگی" />
                 </div>

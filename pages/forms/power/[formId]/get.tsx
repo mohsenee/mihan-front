@@ -5,8 +5,10 @@ import * as Yup from "yup";
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
-const role = 'Power';
+const role = "Power";
 
 interface FormState {
   reportDate: string;
@@ -335,13 +337,24 @@ const PowerReportForm: NextPage = () => {
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
   const [comment, setComment] = useState<string>("");
-  const [checklistItems1, setChecklistItems1] = useState(initialChecklistItems1);
-  const [checklistItems2, setChecklistItems2] = useState(initialChecklistItems2);
-  const [checklistItems3, setChecklistItems3] = useState(initialChecklistItems3);
-  const [checklistItems4, setChecklistItems4] = useState(initialChecklistItems4);
-  const [checklistItems5, setChecklistItems5] = useState(initialChecklistItems5);
-  const [checklistItems6, setChecklistItems6] = useState(initialChecklistItems6);
-
+  const [checklistItems1, setChecklistItems1] = useState(
+    initialChecklistItems1
+  );
+  const [checklistItems2, setChecklistItems2] = useState(
+    initialChecklistItems2
+  );
+  const [checklistItems3, setChecklistItems3] = useState(
+    initialChecklistItems3
+  );
+  const [checklistItems4, setChecklistItems4] = useState(
+    initialChecklistItems4
+  );
+  const [checklistItems5, setChecklistItems5] = useState(
+    initialChecklistItems5
+  );
+  const [checklistItems6, setChecklistItems6] = useState(
+    initialChecklistItems6
+  );
 
   const daysOfWeek = [
     { value: "0", label: "یکشنبه" },
@@ -514,8 +527,6 @@ const PowerReportForm: NextPage = () => {
           return item;
         });
         setChecklistItems6(updatedChecklistItems6);
-
-
       } catch (error) {
         console.error("Failed to fetch shift names:", error);
       }
@@ -654,9 +665,36 @@ const PowerReportForm: NextPage = () => {
     names: Yup.array().min(1, "اسامی شیفت الزامی است"),
   });
 
+  const handleDownloadPDF = async () => {
+    const formElement = document.getElementById("form-container");
+
+    if (!formElement) {
+      console.error("Form not found!");
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(formElement, {
+        scale: 2, // Increases resolution for better clarity
+        useCORS: true, // Prevents cross-origin issues
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 190; // Adjust width for better spacing
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save("SwitchReport.pdf");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
+  };
+
   return (
-   <DefaultLayout>
-    <Breadcrumb
+    <DefaultLayout>
+      <Breadcrumb
         pages={[
           {
             name: "گزارشات روزانه",
@@ -665,1539 +703,1548 @@ const PowerReportForm: NextPage = () => {
           {
             name: "مشاهده گزارش ",
             path: `/forms/${role.toLowerCase()}/get`,
-            disabled: true
+            disabled: true,
           },
         ]}
       />
 
-<div
-      className="flex justify-center items-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/image/11.png')" }}
-    >
-      <div className="w-4/5 max-w-15xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
-        <Formik
-          initialValues={{
-            reportDate: currentDate,
-            day: currentDay,
-            comments: "",
-            names: [],
-            checklistItems1: checklistItems1,
-            checklistItems2: checklistItems2,
-            checklistItems3: checklistItems3,
-            checklistItems4: checklistItems4,
-            checklistItems5: checklistItems5,
-            checklistItems6: checklistItems6,
-          }}
-          validationSchema={validationSchema}
-          enableReinitialize
-          onSubmit={handleSubmit}
-          validateOnSubmit={true}
+      <div className="text-center mt-4">
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-600"
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
-            <Form>
-              <h4 className="text-center mb-4 font-bold text-lg">
-                فرم گزارش روزانه تجهیزات نیرو
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Report Date */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    تاریخ گزارش
-                  </label>
-                  <Field
-                    value={currentDate}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="reportDate"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-
-                {/* Day of Week */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    روز هفته
-                  </label>
-                  <Field
-                    value={currentDay}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="day"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-
-                {/* Shift Names */}
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    اسامی شیفت
-                  </label>
-                  <Field
-                    value={names}
-                    className="w-full border rounded-md p-2"
-                  />
-                  <ErrorMessage
-                    name="names"
-                    component="div"
-                    className="text-red-500 text-xs mt-1"
-                  />
-                </div>
-              </div>
-
-              {/* Checklist Section */}
-              <div className="mt-6">
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VBATT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IBATT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      بازدید سوخت
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      بازدید روغن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      بازدید آب
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      گرمکن دیزل
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمپرها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems1.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].selected1`}
-                                          type="text"
-                                          value={item.selected1}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected1`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].selected2`}
-                                          type="text"
-                                          value={item.selected2}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected2`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].selected3`}
-                                          type="text"
-                                          value={item.selected3}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected3`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].selected4`}
-                                          type="text"
-                                          value={item.selected4}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected4`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].selected5`}
-                                          type="text"
-                                          value={item.selected5}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected5`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <input
-                                          name={`checklistItems1[${index}].selected6`}
-                                          type="text"
-                                          value={item.selected6}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected6`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <input
-                                          name={`checklistItems1[${index}].selected7`}
-                                          type="text"
-                                          value={item.selected7}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].selected7`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems1[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                          name={`checklistItems1[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VS
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VR
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IS
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IR
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems2.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected1`}
-                                          type="text"
-                                          value={item.selected1}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected1`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected2`}
-                                          type="text"
-                                          value={item.selected2}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected2`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected3`}
-                                          type="text"
-                                          value={item.selected3}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected3`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected4`}
-                                          type="text"
-                                          value={item.selected4}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected4`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected5`}
-                                          type="text"
-                                          value={item.selected5}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected5`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].selected6`}
-                                          type="text"
-                                          value={item.selected6}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].selected6`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems2[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems2[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems3.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems3[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems3[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems3[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems3[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems3[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems3[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems3[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems3[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems3[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems3[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VT(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VS(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VR(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IT(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IS(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IR(in)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VOUT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IOUT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IBATT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems4.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected1`}
-                                          type="text"
-                                          value={item.selected1}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected1`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected2`}
-                                          type="text"
-                                          value={item.selected2}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected2`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected3`}
-                                          type="text"
-                                          value={item.selected3}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected3`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected4`}
-                                          type="text"
-                                          value={item.selected4}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected4`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected5`}
-                                          type="text"
-                                          value={item.selected5}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected5`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected6`}
-                                          type="text"
-                                          value={item.selected6}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected6`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected7`}
-                                          type="text"
-                                          value={item.selected7}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected7`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected8`}
-                                          type="text"
-                                          value={item.selected8}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected8`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].selected9`}
-                                          type="text"
-                                          value={item.selected9}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].selected9`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems4[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems4[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VT(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VS(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VR(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IT(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IS(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IR(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      F(out)
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VBATT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IBATT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems5.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected1`}
-                                          type="text"
-                                          value={item.selected1}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected1`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected2`}
-                                          type="text"
-                                          value={item.selected2}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected2`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected3`}
-                                          type="text"
-                                          value={item.selected3}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected3`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected4`}
-                                          type="text"
-                                          value={item.selected4}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected4`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected5`}
-                                          type="text"
-                                          value={item.selected5}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected5`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected6`}
-                                          type="text"
-                                          value={item.selected6}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected6`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected7`}
-                                          type="text"
-                                          value={item.selected7}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected7`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected8`}
-                                          type="text"
-                                          value={item.selected8}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected8`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].selected9`}
-                                          type="text"
-                                          value={item.selected9}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].selected9`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems5[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems5[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                              <table className="w-full table-auto border-collapse border border-gray-300">
-                                <thead>
-                                  <tr>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      VOUT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      IOUT
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      V_in
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      I_in
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      *
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      نشانگرها و کلیدها
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت ظاهری
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      دمای سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      وضعیت سالن
-                                    </th>
-                                    <th className="border border-gray-300 p-2 text-center bg-gray-200">
-                                      توضیحات
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {values.checklistItems6.map((item, index) => (
-                                    <tr
-                                      key={item.id}
-                                      className="odd:bg-gray-50 even:bg-gray-100"
-                                    >
-                                      <td className="border border-gray-300 p-2">
-                                        {item.label}
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].selected1`}
-                                          type="text"
-                                          value={item.selected1}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].selected1`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].selected2`}
-                                          type="text"
-                                          value={item.selected2}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].selected2`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].selected3`}
-                                          type="text"
-                                          value={item.selected3}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].selected3`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].selected4`}
-                                          type="text"
-                                          value={item.selected4}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].selected4`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center"></td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].indicators_keys`}
-                                          type="text"
-                                          value={item.indicators_keys}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].indicators_keys`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].appearance`}
-                                          type="text"
-                                          value={item.appearance}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].appearance`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].temperature`}
-                                          type="text"
-                                          value={item.temperature}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].temperature`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].status`}
-                                          type="text"
-                                          value={item.status}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].status`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                      <td className="border border-gray-300 p-2 text-center">
-                                        <Field
-                                        name={`checklistItems6[${index}].descriptions`}
-                                          type="text"
-                                          value={item.descriptions}
-                                          onChange={(
-                                            e: React.ChangeEvent<HTMLInputElement>
-                                          ) =>
-                                            setFieldValue(
-                                              `checklistItems6[${index}].descriptions`,
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-full h-full p-2 border rounded-md text-center"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-
-              {/* Comments */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-1">
-                  توضیحات
-                </label>
-                <Field
-                  as="textarea"
-                  name="comments"
-                  value = {comment}
-                  rows={4}
-                  className="w-full border rounded-md p-2"
-                />
-              </div>
-
-            </Form>
-          )}
-        </Formik>
+          دانلود PDF
+        </button>
       </div>
-    </div>
-   </DefaultLayout>
+
+      <div
+        id="form-container"
+        className="flex justify-center items-center min-h-screen bg-cover bg-center"
+        // style={{ backgroundImage: "url('/image/11.png')" }}
+      >
+        <div className="w-4/5 max-w-15xl bg-white p-6 rounded-lg shadow-lg opacity-95 my-10">
+          <Formik
+            initialValues={{
+              reportDate: currentDate,
+              day: currentDay,
+              comments: "",
+              names: [],
+              checklistItems1: checklistItems1,
+              checklistItems2: checklistItems2,
+              checklistItems3: checklistItems3,
+              checklistItems4: checklistItems4,
+              checklistItems5: checklistItems5,
+              checklistItems6: checklistItems6,
+            }}
+            validationSchema={validationSchema}
+            enableReinitialize
+            onSubmit={handleSubmit}
+            validateOnSubmit={true}
+          >
+            {({ setFieldValue, values, validateField, isValid }) => (
+              <Form>
+                <h4 className="text-center mb-4 font-bold text-lg">
+                  فرم گزارش روزانه تجهیزات نیرو
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Report Date */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      تاریخ گزارش
+                    </label>
+                    <Field
+                      value={currentDate}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="reportDate"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Day of Week */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      روز هفته
+                    </label>
+                    <Field
+                      value={currentDay}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="day"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  {/* Shift Names */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      اسامی شیفت
+                    </label>
+                    <Field
+                      value={names}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="names"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Checklist Section */}
+                <div className="mt-6">
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VBATT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IBATT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          بازدید سوخت
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          بازدید روغن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          بازدید آب
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          گرمکن دیزل
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمپرها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems1.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].selected1`}
+                              type="text"
+                              value={item.selected1}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected1`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].selected2`}
+                              type="text"
+                              value={item.selected2}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected2`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].selected3`}
+                              type="text"
+                              value={item.selected3}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected3`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].selected4`}
+                              type="text"
+                              value={item.selected4}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected4`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].selected5`}
+                              type="text"
+                              value={item.selected5}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected5`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <input
+                              name={`checklistItems1[${index}].selected6`}
+                              type="text"
+                              value={item.selected6}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected6`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <input
+                              name={`checklistItems1[${index}].selected7`}
+                              type="text"
+                              value={item.selected7}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].selected7`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems1[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems1[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VS
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VR
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IS
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IR
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems2.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected1`}
+                              type="text"
+                              value={item.selected1}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected1`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected2`}
+                              type="text"
+                              value={item.selected2}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected2`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected3`}
+                              type="text"
+                              value={item.selected3}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected3`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected4`}
+                              type="text"
+                              value={item.selected4}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected4`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected5`}
+                              type="text"
+                              value={item.selected5}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected5`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].selected6`}
+                              type="text"
+                              value={item.selected6}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].selected6`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems2[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems2[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems3.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems3[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems3[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems3[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems3[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems3[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems3[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems3[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems3[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems3[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems3[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VT(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VS(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VR(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IT(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IS(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IR(in)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VOUT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IOUT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IBATT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems4.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected1`}
+                              type="text"
+                              value={item.selected1}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected1`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected2`}
+                              type="text"
+                              value={item.selected2}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected2`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected3`}
+                              type="text"
+                              value={item.selected3}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected3`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected4`}
+                              type="text"
+                              value={item.selected4}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected4`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected5`}
+                              type="text"
+                              value={item.selected5}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected5`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected6`}
+                              type="text"
+                              value={item.selected6}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected6`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected7`}
+                              type="text"
+                              value={item.selected7}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected7`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected8`}
+                              type="text"
+                              value={item.selected8}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected8`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].selected9`}
+                              type="text"
+                              value={item.selected9}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].selected9`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems4[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems4[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VT(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VS(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VR(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IT(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IS(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IR(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          F(out)
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VBATT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IBATT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems5.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected1`}
+                              type="text"
+                              value={item.selected1}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected1`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected2`}
+                              type="text"
+                              value={item.selected2}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected2`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected3`}
+                              type="text"
+                              value={item.selected3}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected3`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected4`}
+                              type="text"
+                              value={item.selected4}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected4`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected5`}
+                              type="text"
+                              value={item.selected5}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected5`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected6`}
+                              type="text"
+                              value={item.selected6}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected6`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected7`}
+                              type="text"
+                              value={item.selected7}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected7`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected8`}
+                              type="text"
+                              value={item.selected8}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected8`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].selected9`}
+                              type="text"
+                              value={item.selected9}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].selected9`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems5[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems5[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <table className="w-full table-auto border-collapse border border-gray-300">
+                    <thead>
+                      <tr>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200"></th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          VOUT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          IOUT
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          V_in
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          I_in
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          *
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          نشانگرها و کلیدها
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت ظاهری
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          دمای سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          وضعیت سالن
+                        </th>
+                        <th className="border border-gray-300 p-2 text-center bg-gray-200">
+                          توضیحات
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {values.checklistItems6.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="odd:bg-gray-50 even:bg-gray-100"
+                        >
+                          <td className="border border-gray-300 p-2">
+                            {item.label}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].selected1`}
+                              type="text"
+                              value={item.selected1}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].selected1`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].selected2`}
+                              type="text"
+                              value={item.selected2}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].selected2`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].selected3`}
+                              type="text"
+                              value={item.selected3}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].selected3`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].selected4`}
+                              type="text"
+                              value={item.selected4}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].selected4`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center"></td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].indicators_keys`}
+                              type="text"
+                              value={item.indicators_keys}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].indicators_keys`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].appearance`}
+                              type="text"
+                              value={item.appearance}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].appearance`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].temperature`}
+                              type="text"
+                              value={item.temperature}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].temperature`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].status`}
+                              type="text"
+                              value={item.status}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].status`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">
+                            <Field
+                              name={`checklistItems6[${index}].descriptions`}
+                              type="text"
+                              value={item.descriptions}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setFieldValue(
+                                  `checklistItems6[${index}].descriptions`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full h-full p-2 border rounded-md text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Comments */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium mb-1">
+                    توضیحات
+                  </label>
+                  <Field
+                    as="textarea"
+                    name="comments"
+                    value={comment}
+                    rows={4}
+                    className="w-full border rounded-md p-2"
+                  />
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
+    </DefaultLayout>
   );
 };
 
