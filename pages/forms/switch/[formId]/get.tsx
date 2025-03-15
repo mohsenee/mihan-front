@@ -229,7 +229,7 @@ const SwitchReportForm: NextPage = () => {
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save("SwitchReport.pdf");
+      pdf.save(`SwitchReport${currentDate}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     }
