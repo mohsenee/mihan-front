@@ -7,7 +7,7 @@ import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilit
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
-import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image";
 import jsPDF from "jspdf";
 
 const role = "Facilities";
@@ -128,26 +128,17 @@ const FacilitiesReportForm: NextPage = () => {
 
   const handleDownloadPDF = async () => {
     const formElement = document.getElementById("form-container");
-
-    if (!formElement) {
-      console.error("Form not found!");
-      return;
-    }
-
+    if (!formElement) return console.error("Form not found!");
+  
     try {
-      const canvas = await html2canvas(formElement, {
-        scale: 2, // Increases resolution for better clarity
-        useCORS: true, // Prevents cross-origin issues
-      });
-
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = await domtoimage.toPng(formElement);
       const pdf = new jsPDF("p", "mm", "a4");
-
-      const imgWidth = 190; // Adjust width for better spacing
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
+  
+      const imgWidth = 190;
+      const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
+  
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save(`FacilitiesReport${currentDate}.pdf`);
+      pdf.save(`SwitchReport${currentDate}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     }
