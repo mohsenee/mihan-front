@@ -27,7 +27,7 @@ interface FormState {
   names: string[];
   checklistItems: ChecklistItem[];
   capacityItems: CapacityItem[];
-  files: File[];
+  files: string[];
 }
 
 interface ChecklistItem {
@@ -56,6 +56,7 @@ const SwitchReportForm: NextPage = () => {
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [userName, setUserName] = useState<string | null>("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedBase64, setUploadedBase64] = useState<string[]>([]);
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -179,7 +180,6 @@ const SwitchReportForm: NextPage = () => {
     }
   }, []);
 
-  // useEffect(()=>{console.log("**********************"); console.log(uploadedFiles)},[uploadedFiles])
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: { [key: string]: string | boolean | number | null | File[] } = {
@@ -188,6 +188,7 @@ const SwitchReportForm: NextPage = () => {
       names: values.names.join(", "),
       comments: values.comments,
       createdBy: userName,
+
     };
 
     values.checklistItems.forEach((item) => {
@@ -198,7 +199,7 @@ const SwitchReportForm: NextPage = () => {
       mappedValues[item.task] = item.quantity;
     });
 
-    const formData = new FormData();
+    mappedValues.files = uploadedFiles;
   
 
     try {
@@ -235,69 +236,6 @@ const SwitchReportForm: NextPage = () => {
     }
   };
 
-  // const handleSubmit = async (values: FormState) => {
-  //   // Create a FormData object to send the form data
-  //   const formData = new FormData();
-  
-  //   // Append form data to FormData object
-  //   formData.append("role", role); // Add the role
-  //   formData.append("reportDate", values.reportDate); // Add the reportDate
-  //   formData.append("day", values.day); // Add the day
-  //   formData.append("names", values.names.join(", ")); // Add the names as a comma-separated string
-  //   formData.append("comments", values.comments); // Add the comments
-  //   formData.append("createdBy", userName?? ""); // Add the createdBy
-  
-  //   // Append checklistItems (if any)
-  //   values.checklistItems.forEach((item) => {
-  //     formData.append(item.task, String(item.selected));
-  //   });
-  
-  //   // Append capacityItems (if any)
-  //   values.capacityItems.forEach((item) => {
-  //     formData.append(item.task, String(item.quantity));
-  //   });
-  
-  //   // Append the files
-  //   uploadedFiles.forEach((file) => {
-  //     formData.append("files", file); // Add each file to the FormData object
-  //   });
-
-  //   formData.forEach((a,b)=>{console.log(a,b)})
-  
-  //   try {
-  //     // Check if the form already exists for the given role and reportDate
-  //     const checkExistForm = await fetch(
-  //       `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
-  //     );
-  //     const data = await checkExistForm.json();
-  
-  //     if (data) {
-  //       alert("قبلا در این تاریخ گزارش ثبت شده است");
-  //     } else {
-  //       // Send the form data to the server using the FormData object
-  //       const createdForm = await fetch("http://localhost:8000/forms/createForm", {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Include the JWT token in the headers
-  //         },
-  //         body: formData, // Pass the FormData object as the body
-  //       });
-  
-  //       if (createdForm.ok) {
-  //         alert("Data sent successfully!");
-  //         router.push(`/forms/${role.toLowerCase()}/reports`);
-  //       } else {
-  //         alert("Failed to send data.");
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     alert("Failed to send data.");
-  //   }
-  // };
-  
-
-
   const handleDateChange = (date: any, setFieldValue: any) => {
     const formattedDate = date ? date.format("YYYY/MM/DD") : "";
     setFieldValue("reportDate", formattedDate);
@@ -323,6 +261,25 @@ const SwitchReportForm: NextPage = () => {
       .required("ظرفیت‌ها الزامی هستند")
       .min(1, "باید حداقل یک ظرفیت وارد شود"), // Show error if the array is empty
   });
+
+  const handleFilesUploaded = (files: File[]) => {
+    setUploadedFiles(files);
+  
+    // Convert files to Base64 and update the Base64 state
+    const base64List: string[] = [];
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        base64List[index] = reader.result as string;
+        if (base64List.length === files.length) {
+          setUploadedBase64(base64List);  // Update base64 only after all files are converted
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  
+ 
 
   return (
     <DefaultLayout>
@@ -450,7 +407,7 @@ const SwitchReportForm: NextPage = () => {
                   </div>
                 </div>
 
-                <FileUpload onFilesUploaded={setUploadedFiles} />
+                <FileUpload onFilesUploaded={handleFilesUploaded} />
 
                 {/* Checklist Section */}
                 <div className="mt-6">

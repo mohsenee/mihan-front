@@ -10,6 +10,7 @@ interface FileUploadProps {
 
 export default function FileUpload({ onFilesUploaded }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
+  const [base64Files, setBase64Files] = useState<string[]>([]); // State for Base64 strings
   const [uploading, setUploading] = useState(false);
 
   const fileTypes: Accept = {
@@ -29,6 +30,7 @@ export default function FileUpload({ onFilesUploaded }: FileUploadProps) {
       setFiles((prevFiles: File[]) => {
         const newFiles = [...prevFiles, ...acceptedFiles];
         onFilesUploaded(newFiles); // Notify parent with the new files
+        convertFilesToBase64(newFiles); // Convert files to Base64
         return newFiles;
       });
     },
@@ -36,8 +38,23 @@ export default function FileUpload({ onFilesUploaded }: FileUploadProps) {
 
   const removeFile = (name: string) => {
     const newFiles = files.filter(file => file.name !== name);
+    const newBase64Files = base64Files.filter((base64, index) => files[index].name !== name);
     setFiles(newFiles);
+    setBase64Files(newBase64Files); // Remove Base64 string of the removed file
     onFilesUploaded(newFiles); // Notify parent with the updated files
+  };
+
+  const convertFilesToBase64 = (files: File[]) => {
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Files((prevBase64Files) => [
+          ...prevBase64Files,
+          reader.result as string, // Store Base64 result
+        ]);
+      };
+      reader.readAsDataURL(file); // Convert to Base64
+    });
   };
 
   return (
@@ -62,9 +79,9 @@ export default function FileUpload({ onFilesUploaded }: FileUploadProps) {
               <button onClick={() => removeFile(file.name)} className="text-red-500 hover:text-red-700">
                 <X size={20} />
               </button>
+
             </div>
           ))}
-          
         </div>
       )}
     </div>
