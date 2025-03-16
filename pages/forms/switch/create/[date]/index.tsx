@@ -278,8 +278,6 @@ const SwitchReportForm: NextPage = () => {
       reader.readAsDataURL(file);
     });
   };
-  
- 
 
   return (
     <DefaultLayout>
