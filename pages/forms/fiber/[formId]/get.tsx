@@ -158,15 +158,6 @@ const FiberReportForm: NextPage = () => {
     }
   };
 
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
-  };
-
   const validationSchema = Yup.object({
     reportDate: Yup.string().required("تاریخ گزارش الزامی است"),
     day: Yup.string().required("روز هفته الزامی است"),
@@ -185,7 +176,7 @@ const FiberReportForm: NextPage = () => {
       const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
   
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save(`SwitchReport${currentDate}.pdf`);
+      pdf.save(`FiberReport${currentDate}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     }

@@ -677,7 +677,7 @@ const PowerReportForm: NextPage = () => {
       const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
   
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save(`SwitchReport${currentDate}.pdf`);
+      pdf.save(`PowerReport${currentDate}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     }

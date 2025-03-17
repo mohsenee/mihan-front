@@ -347,7 +347,13 @@ const MuxReportForm: NextPage = () => {
       const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
   
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
-      pdf.save(`SwitchReport${currentDate}.pdf`);
+      document.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
+        const inputElement = checkbox as HTMLInputElement;
+        if (inputElement.checked) {
+          inputElement.setAttribute("checked", "true");
+        } 
+      });
+      pdf.save(`MuxReport${currentDate}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     }
