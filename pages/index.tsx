@@ -30,7 +30,7 @@ export default function Home() {
                 <div className="flex items-center justify-between px-10">
                   <div className="logo-center flex items-center">
                     <img
-                      src="/logo/TIC-Logo.png"
+                      src="/logo/TIC-Logo-1030x1030.png"
                       className="w-60 h-60 mr-4 ml-4"
                       alt="logo"
                     />

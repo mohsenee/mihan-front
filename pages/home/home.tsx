@@ -66,7 +66,7 @@ const Home = () => {
           <Link href="/forms/fiber/reports" className="text-white no-underline">
             <div className="bg-blue-400 text-center p-8 rounded-2xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl">
               <h3 className="text-lg font-bold">فیبر نوری</h3>
-              <p>fiber</p>
+              <p>Fiber</p>
             </div>
           </Link>
 

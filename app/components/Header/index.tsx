@@ -17,9 +17,9 @@ const Header = () => {
         </div>
 
         <div className="flex items-center">
-          <a href="/" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <img src="/logo/TIC-Logo.png" alt="Logo" className="h-auto max-h-8 w-auto" />
-          </a>
+          </Link>
         </div>
       </div>
     </header>

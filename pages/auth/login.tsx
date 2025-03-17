@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { fetchUserData } from '../../app/utils/fetchUserData';
 import { AppDispatch } from '../../app/store/store';
 import { useDispatch } from "react-redux";
+import Link from "next/link";
 
 const Login = () => {
   const [code, setCode] = useState("");
@@ -122,9 +123,9 @@ const Login = () => {
 
         <p className="mt-10 text-center text-sm text-blue-500">
           عضو سامانه نیستید؟{" "}
-          <a href="/auth/register" className="font-semibold text-blue-700 hover:text-blue-500">
+          <Link href="/auth/register" className="font-semibold text-blue-700 hover:text-blue-500">
             ساخت حساب کاربری
-          </a>
+          </Link>
         </p>
       </div>
     </div>
