@@ -17,6 +17,7 @@ interface FormState {
   day: string;
   comments: string;
   names: string[];
+  createdBy: string;
   checklistItems: ChecklistItem[];
   otherItems: OtherItems[];
 }
@@ -198,6 +199,7 @@ const MuxReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
   const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
   const [otherItems, setOtherItems] = useState(initialOtherItems);
@@ -239,6 +241,7 @@ const MuxReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy)
 
         const updatedChecklistItems = checklistItems.map((item) => {
           const taskStatus = data[item.task]; // Access corresponding task data from `data`
@@ -396,6 +399,7 @@ const MuxReportForm: NextPage = () => {
             day: currentDay,
             comments: "",
             names: [],
+            createdBy: createdBy,
             checklistItems: checklistItems,
             otherItems: otherItems,
           }}
@@ -410,7 +414,7 @@ const MuxReportForm: NextPage = () => {
                 فرم گزارش روزانه انتقال
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Report Date */}
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -454,6 +458,21 @@ const MuxReportForm: NextPage = () => {
                   />
                   <ErrorMessage
                     name="names"
+                    component="div"
+                    className="text-red-500 text-xs mt-1"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    نوشته شده توسط: 
+                  </label>
+                  <Field
+                    value={createdBy}
+                    className="w-full border rounded-md p-2"
+                  />
+                  <ErrorMessage
+                    name="createdBy"
                     component="div"
                     className="text-red-500 text-xs mt-1"
                   />

@@ -18,6 +18,7 @@ interface FormState {
   day: string;
   comments: string;
   names: string[];
+  createdBy: string;
 }
 
 const FiberReportForm: NextPage = () => {
@@ -29,6 +30,7 @@ const FiberReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
   const [comment, setComment] = useState<string>("");
   const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
     {
@@ -113,6 +115,7 @@ const FiberReportForm: NextPage = () => {
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
         setComment(data.comments);
+        setCreatedBy(data.createdBy);
 
         setDynamicTableData1(data.table1);
         setDynamicTableData2(data.table2);
@@ -132,6 +135,7 @@ const FiberReportForm: NextPage = () => {
       reportDate: values.reportDate,
       day: values.day,
       names: values.names.join(", "),
+      createdBy: createdBy,
       comments: values.comments,
       table1: dynamicTableData1,
       table2: dynamicTableData2,
@@ -167,14 +171,15 @@ const FiberReportForm: NextPage = () => {
   const handleDownloadPDF = async () => {
     const formElement = document.getElementById("form-container");
     if (!formElement) return console.error("Form not found!");
-  
+
     try {
       const imgData = await domtoimage.toPng(formElement);
       const pdf = new jsPDF("p", "mm", "a4");
-  
+
       const imgWidth = 190;
-      const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
-  
+      const imgHeight =
+        (formElement.clientHeight * imgWidth) / formElement.clientWidth;
+
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
       pdf.save(`FiberReport${currentDate}.pdf`);
     } catch (error) {
@@ -219,6 +224,7 @@ const FiberReportForm: NextPage = () => {
               day: currentDay,
               comments: "",
               names: [],
+              createdBy: createdBy,
             }}
             validationSchema={validationSchema}
             enableReinitialize
@@ -231,7 +237,7 @@ const FiberReportForm: NextPage = () => {
                   گزارش روزانه فیبرنوری
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Report Date */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -275,6 +281,21 @@ const FiberReportForm: NextPage = () => {
                     />
                     <ErrorMessage
                       name="names"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      نوشته شده توسط:
+                    </label>
+                    <Field
+                      value={createdBy}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="createdBy"
                       component="div"
                       className="text-red-500 text-xs mt-1"
                     />

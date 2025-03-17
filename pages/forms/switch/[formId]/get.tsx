@@ -16,6 +16,7 @@ interface FormState {
   day: string;
   comments: string;
   names: string[];
+  createdBy: string;
   checklistItems: ChecklistItem[];
   capacityItems: CapacityItem[];
 }
@@ -95,6 +96,7 @@ const SwitchReportForm: NextPage = () => {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState<string>("");
   const [comment, setComment] = useState<string>("");
   const [capacityItems, setCapacityItems] = useState(initialCapacityItems);
   const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
@@ -133,6 +135,7 @@ const SwitchReportForm: NextPage = () => {
         setCurrentDate(data.reportDate);
         const day = daysOfWeek.find((d) => d.value === data.day.toString());
         setCurrentDay(day ? day.label : "Unknown");
+        setCreatedBy(data.createdBy);
 
         const updatedCapacityItems = capacityItems.map((item) => ({
           ...item,
@@ -211,14 +214,15 @@ const SwitchReportForm: NextPage = () => {
   const handleDownloadPDF = async () => {
     const formElement = document.getElementById("form-container");
     if (!formElement) return console.error("Form not found!");
-  
+
     try {
       const imgData = await domtoimage.toPng(formElement);
       const pdf = new jsPDF("p", "mm", "a4");
-  
+
       const imgWidth = 190;
-      const imgHeight = (formElement.clientHeight * imgWidth) / formElement.clientWidth;
-  
+      const imgHeight =
+        (formElement.clientHeight * imgWidth) / formElement.clientWidth;
+
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
       pdf.save(`SwitchReport${currentDate}.pdf`);
     } catch (error) {
@@ -262,6 +266,7 @@ const SwitchReportForm: NextPage = () => {
               day: currentDay,
               comments: "",
               names: [],
+              createdBy: createdBy,
               checklistItems: checklistItems,
               capacityItems: capacityItems,
             }}
@@ -276,7 +281,7 @@ const SwitchReportForm: NextPage = () => {
                   فرم گزارش روزانه دیتا و سوئیچ
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Report Date */}
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -322,6 +327,21 @@ const SwitchReportForm: NextPage = () => {
                     />
                     <ErrorMessage
                       name="names"
+                      component="div"
+                      className="text-red-500 text-xs mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      نوشته شده توسط:
+                    </label>
+                    <Field
+                      value={createdBy}
+                      className="w-full border rounded-md p-2"
+                    />
+                    <ErrorMessage
+                      name="createdBy"
                       component="div"
                       className="text-red-500 text-xs mt-1"
                     />
