@@ -106,7 +106,7 @@ const Login = () => {
                 onClick={togglePasswordVisibility}
                 className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? "👁️" : "👁️"}
               </span>
             </div>
           </div>
