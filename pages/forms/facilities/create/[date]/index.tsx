@@ -15,7 +15,8 @@ import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
 const role = "Facilities";
 
-// Define the type for names
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 interface NameOption {
   label: string;
   value: string;
@@ -102,7 +103,7 @@ const FacilitiesReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=${role}`
+          `${apiUrl}/users/getUserByRole?role=${role}`
         );
         const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
         setNamesOptions(
@@ -138,7 +139,7 @@ const FacilitiesReportForm: NextPage = () => {
 
     try {
       const checkExistForm = await fetch(
-        `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
+        `${apiUrl}/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
       );
       const data = await checkExistForm.json();
 
@@ -146,7 +147,7 @@ const FacilitiesReportForm: NextPage = () => {
         alert("قبلا در این تاریخ گزارش ثبت شده است");
       } else {
         const createdForm = await fetch(
-          "http://localhost:8000/forms/createForm",
+          `${apiUrl}/forms/createForm`,
           {
             method: "POST",
             headers: {

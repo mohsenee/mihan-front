@@ -14,7 +14,8 @@ import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
 const role = "Power";
 
-// Define the type for names
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 interface NameOption {
   label: string;
   value: string;
@@ -393,7 +394,7 @@ const PowerReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=${role}`
+          `${apiUrl}/users/getUserByRole?role=${role}`
         );
         const data = await response.json();
         setNamesOptions(
@@ -523,7 +524,7 @@ const PowerReportForm: NextPage = () => {
     });
     try {
       const checkExistForm = await fetch(
-        `http://localhost:8000/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
+        `${apiUrl}/forms/getFormsByRoleAndDate?role=${role}&reportDate=${values.reportDate}`
       );
       const data = await checkExistForm.json();
       
@@ -531,7 +532,7 @@ const PowerReportForm: NextPage = () => {
         alert('قبلا در این تاریخ گزارش ثبت شده است')
       }else{
         const createdForm = await fetch(
-          "http://localhost:8000/forms/createForm",
+          `${apiUrl}/forms/createForm`,
           {
             method: "POST",
             headers: {

@@ -8,6 +8,8 @@ import DefaultLayout from "../Layouts/DefaultLayout";
 import Breadcrumb from "../Breadcrumbs/Breadcrumb";
 import Link from "next/link";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 interface Report {
   id: string;
   reportDate: string;
@@ -20,7 +22,7 @@ interface FormElementsProps {
 
 const fetchReports = async (role: string): Promise<Report[]> => {
   const response = await fetch(
-    `http://localhost:8000/forms/getFormsByRole?role=${role}`,
+    `${apiUrl}/forms/getFormsByRole?role=${role}`,
     {
       method: "GET",
       headers: {
@@ -43,7 +45,7 @@ const deleteFormsWithId = async (
   userName: string | null
 ) => {
   const response = await fetch(
-    `http://localhost:8000/forms/deleteFormById?formId=${id}&role=${role}&updatedBy=${userName}`,
+    `${apiUrl}/forms/deleteFormById?formId=${id}&role=${role}&updatedBy=${userName}`,
     {
       method: "DELETE",
       headers: {

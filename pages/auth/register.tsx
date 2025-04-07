@@ -18,6 +18,8 @@ import { useDispatch } from "react-redux";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 import Link from "next/link";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 interface RegisterFormValues {
   name: string;
   code: string;
@@ -118,8 +120,8 @@ const Register: NextPage = () => {
   };
 
   const handleSubmit = async (values: RegisterFormValues) => {
-    const checkUserUrl = `http://localhost:8000/users/getUserByCode?code=${values.code}`;
-    const createUserUrl = "http://localhost:8000/auth/register";
+    const checkUserUrl = `${apiUrl}/users/getUserByCode?code=${values.code}`;
+    const createUserUrl = `${apiUrl}/auth/register`;
 
     try {
       // Step 1: Check if the user exists

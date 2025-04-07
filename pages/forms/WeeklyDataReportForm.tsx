@@ -8,7 +8,8 @@ import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 
-// Define the type for names
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 interface NameOption {
   label: string;
   value: string;
@@ -120,7 +121,7 @@ const SwitchReportForm: NextPage = () => {
     const fetchNames = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/users/getUserByRole?role=Data`
+          `${apiUrl}/users/getUserByRole?role=Data`
         );
         const data = await response.json(); // Assuming data is an array of names: ["John", "Doe"]
         setNamesOptions(
@@ -153,7 +154,7 @@ const SwitchReportForm: NextPage = () => {
     try {
       console.log("Mapped Values:", mappedValues);
       const createForm = await fetch(
-        "http://localhost:8000/forms/createSwithForm",
+        "${apiUrl}/forms/createSwithForm",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

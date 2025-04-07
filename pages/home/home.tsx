@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Link from "next/link";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 const Home = () => {
   const [userName, setUserName] = useState("");
   const router = useRouter();
@@ -19,7 +21,7 @@ const Home = () => {
 
     try {
       const fetchUserData = async () => {
-        const response = await fetch("http://localhost:8000/auth/getUserData", {
+        const response = await fetch(`${apiUrl}/auth/getUserData`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

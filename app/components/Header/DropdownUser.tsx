@@ -4,6 +4,8 @@ import Image from "next/image";
 import ClickOutside from "../ClickOutside";
 import { useRouter } from "next/router";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
    const [userName, setUserName] = useState("");
@@ -21,7 +23,7 @@ const DropdownUser = () => {
   
       try {
         const fetchUserData = async () => {
-          const response = await fetch("http://localhost:8000/auth/getUserData", {
+          const response = await fetch(`${apiUrl}/auth/getUserData`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,

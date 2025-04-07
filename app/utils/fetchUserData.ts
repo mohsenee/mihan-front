@@ -1,9 +1,11 @@
 import { AppDispatch } from '../store/store';
 import { setUserName } from '../store/userSlice';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 export const fetchUserData = async (dispatch: AppDispatch, token: string) => {
   try {
-    const response = await fetch('http://localhost:8000/auth/getUserData', {
+    const response = await fetch(`${apiUrl}/auth/getUserData`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

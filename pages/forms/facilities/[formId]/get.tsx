@@ -12,6 +12,8 @@ import jsPDF from "jspdf";
 
 const role = "Facilities";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 interface FormState {
   reportDate: string;
   day: string;
@@ -67,7 +69,7 @@ const FacilitiesReportForm: NextPage = () => {
         const token = localStorage.getItem("access_token");
 
         const response = await fetch(
-          `http://localhost:8000/forms/getFormById?formId=${router.query.formId}&role=${role}`,
+          `${apiUrl}/forms/getFormById?formId=${router.query.formId}&role=${role}`,
           {
             method: "GET",
             headers: {
@@ -106,7 +108,7 @@ const FacilitiesReportForm: NextPage = () => {
     try {
       console.log("Mapped Values:", mappedValues);
       const createForm = await fetch(
-        "http://localhost:8000/forms/createFacilitiesForm",
+        `${apiUrl}/forms/createFacilitiesForm`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

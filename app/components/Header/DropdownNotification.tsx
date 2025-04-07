@@ -3,6 +3,8 @@ import Link from "next/link";
 import ClickOutside from "../ClickOutside";
 import { useRouter } from "next/router";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 type Notification = {
   reportDate: string;
   role: string;
@@ -41,7 +43,7 @@ const DropdownNotification = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/forms/getMessageByUserId?userId=${userId}&page=${currentPage}&limit=10`,
+        `${apiUrl}/forms/getMessageByUserId?userId=${userId}&page=${currentPage}&limit=10`,
         { method: "GET" }
       );
       if (response.ok) {

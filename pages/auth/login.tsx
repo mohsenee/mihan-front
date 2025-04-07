@@ -5,6 +5,8 @@ import { AppDispatch } from '../../app/store/store';
 import { useDispatch } from "react-redux";
 import Link from "next/link";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 const Login = () => {
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +33,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
