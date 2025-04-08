@@ -3,15 +3,15 @@ import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select";
-import DatePicker from "react-multi-date-picker";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
-import moment from "moment-jalaali";
+import moment, { Moment } from "moment-jalaali";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
-import FileUpload from "@/app/components/FileUpload";
+// import FileUpload from "@/app/components/FileUpload";
 
 const role = "Switch";
 
@@ -47,18 +47,14 @@ interface CapacityItem {
 }
 
 const SwitchReportForm: NextPage = () => {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
+  
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
   const [userName, setUserName] = useState<string | null>("");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [uploadedBase64, setUploadedBase64] = useState<string[]>([]);
+  // const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  // const [uploadedBase64, setUploadedBase64] = useState<string[]>([]);
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -182,6 +178,12 @@ const SwitchReportForm: NextPage = () => {
     }
   }, []);
 
+  const router = useRouter();
+
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
+
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: { [key: string]: string | boolean | number | null | File[] } = {
@@ -201,7 +203,7 @@ const SwitchReportForm: NextPage = () => {
       mappedValues[item.task] = item.quantity;
     });
 
-    mappedValues.files = uploadedFiles;
+    // mappedValues.files = uploadedFiles;
   
 
     try {
@@ -238,13 +240,21 @@ const SwitchReportForm: NextPage = () => {
     }
   };
 
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
+  const handleDateChange = (date: DateObject | null, setFieldValue: (field: string, value: string) => void) => {
+    if (date) {
+      // Convert DateObject to Moment
+      const momentDate: Moment = moment(date.toString(), "YYYY/MM/DD");
+  
+      const formattedDate = momentDate.format("YYYY/MM/DD");
+      setFieldValue("reportDate", formattedDate);
+  
+      // Get the day index from the selected date
+      const dayIndex = momentDate.toDate().getDay(); // You can also use momentDate.day() if it's more accurate
+      setFieldValue("day", dayIndex.toString());
+    } else {
+      setFieldValue("reportDate", "");
+      setFieldValue("day", "");
+    }
   };
 
   const validationSchema = Yup.object({
@@ -264,22 +274,22 @@ const SwitchReportForm: NextPage = () => {
       .min(1, "باید حداقل یک ظرفیت وارد شود"), // Show error if the array is empty
   });
 
-  const handleFilesUploaded = (files: File[]) => {
-    setUploadedFiles(files);
+  // const handleFilesUploaded = (files: File[]) => {
+  //   setUploadedFiles(files);
   
-    // Convert files to Base64 and update the Base64 state
-    const base64List: string[] = [];
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        base64List[index] = reader.result as string;
-        if (base64List.length === files.length) {
-          setUploadedBase64(base64List);  // Update base64 only after all files are converted
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  };
+  //   // Convert files to Base64 and update the Base64 state
+  //   const base64List: string[] = [];
+  //   files.forEach((file, index) => {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       base64List[index] = reader.result as string;
+  //       if (base64List.length === files.length) {
+  //         setUploadedBase64(base64List);  // Update base64 only after all files are converted
+  //       }
+  //     };
+  //     reader.readAsDataURL(file);
+  //   });
+  // };
 
   return (
     <DefaultLayout>
@@ -330,13 +340,11 @@ const SwitchReportForm: NextPage = () => {
                       تاریخ گزارش
                     </label>
                     <Field name="reportDate">
-                      {({ field, form }: FieldProps) => (
+                      {({ field }: FieldProps) => (
                         <DatePicker
                           {...field}
                           value={field.value || currentDate}
-                          onChange={(date: any) =>
-                            handleDateChange(date, setFieldValue)
-                          }
+                          onChange={(date: DateObject | null) => handleDateChange(date, setFieldValue)}
                           format="YYYY/MM/DD"
                           placeholder="تاریخ را انتخاب کنید"
                           className="w-full border rounded-md p-2"
@@ -361,7 +369,7 @@ const SwitchReportForm: NextPage = () => {
                       as="select"
                       name="day"
                       value={values.day || currentDay}
-                      onChange={(e: any) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setFieldValue("day", e.target.value)
                       }
                       className="w-full border rounded-md p-2"
@@ -391,10 +399,10 @@ const SwitchReportForm: NextPage = () => {
                         label: name,
                         value: name,
                       }))}
-                      onChange={(selected: OnChangeValue<any, any>) => {
+                      onChange={(selected: OnChangeValue<NameOption, true>) => {
                         setFieldValue(
                           "names",
-                          selected ? selected.map((opt: any) => opt.value) : []
+                          selected ? selected.map((opt: NameOption) => opt.value) : []
                         );
                       }}
                       className="w-full border rounded-md p-2"
@@ -407,7 +415,7 @@ const SwitchReportForm: NextPage = () => {
                   </div>
                 </div>
 
-                <FileUpload onFilesUploaded={handleFilesUploaded} />
+                {/* <FileUpload onFilesUploaded={handleFilesUploaded} /> */}
 
                 {/* Checklist Section */}
                 <div className="mt-6">

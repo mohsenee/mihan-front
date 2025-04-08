@@ -14,15 +14,15 @@
   }
 }
 
-@font-face {
+/* @font-face {
   font-family: 'Vazir';
   src: url('/fonts/Vazir.woff2') format('woff2'),
        url('/fonts/Vazir.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-}
+} */
 
-@font-face {
+/* @font-face {
   font-family: 'Vazir';
   src: url('/fonts/Vazir-Bold.woff2') format('woff2'),
        url('/fonts/Vazir-Bold.woff') format('woff');
@@ -36,7 +36,7 @@
        url('/fonts/Vazir-Light.woff') format('woff');
   font-weight: 300;
   font-style: normal;
-}
+} */
 
 body {
   color: var(--foreground);

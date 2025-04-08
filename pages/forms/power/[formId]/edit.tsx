@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
 import { useRouter } from "next/router";
@@ -334,10 +334,6 @@ const initialChecklistItems6: ChecklistItem[] = [
 ];
 
 const PowerReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -569,7 +565,12 @@ const PowerReportForm: NextPage = () => {
     };
 
     fetchNames();
-  }, []); // The empty array ensures this effect runs only once on the client
+  }, []); 
+
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
 
   const handleSubmit = async (values: FormState) => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
@@ -700,9 +701,7 @@ const PowerReportForm: NextPage = () => {
           body: JSON.stringify(requestValue),
         }
       );
-
-      const result = await updateForm.json();
-      console.log("Response:", result);
+     
       if (updateForm.ok) {
         alert("Data sent successfully!");
         router.push(`/forms/${role.toLowerCase()}/reports`);
@@ -760,7 +759,7 @@ const PowerReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فرم گزارش روزانه تجهیزات نیرو
@@ -811,10 +810,10 @@ const PowerReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

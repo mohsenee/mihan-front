@@ -29,7 +29,7 @@ const MuxDynamicTable1: React.FC<DynamicTableProps> = ({ onTableDataChange, init
     const updatedRows = [...rows];
     updatedRows[index] = { ...updatedRows[index], [name]: value };
     setRows(updatedRows);
-    onTableDataChange(updatedRows); // Pass updated data to parent
+    onTableDataChange(updatedRows);
   };
 
   const addRow = () => {
@@ -39,7 +39,7 @@ const MuxDynamicTable1: React.FC<DynamicTableProps> = ({ onTableDataChange, init
   const removeRow = (index: number) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
-    onTableDataChange(updatedRows); // Pass updated data to parent
+    onTableDataChange(updatedRows);
   };
 
   return (

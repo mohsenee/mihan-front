@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import MuxDynamicTable1 from "@/app/components/forms/dynamicTables/muxDynamicTable1";
 import MuxDynamicTable2 from "@/app/components/forms/dynamicTables/muxDynamicTable2";
@@ -190,18 +190,36 @@ const initialOtherItems: OtherItems[] = [
   },
 ];
 
+interface TableRow1 {
+  reporter: string;
+  systemType: string;
+  operation: string;
+  startTime: string;
+  endTime: string;
+  alarm: string;
+  description: string;
+}
+
+interface TableRow2 {
+  stationName: string;
+  stationNumber: string;
+  names: string;
+  timeFromCenter: string;
+  arriveTimeToStation: string;
+  timeFromStation: string;
+  workPermitNumber: string;
+  reason: string;
+  description: string;
+}
+
 const MuxReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
+  const [dynamicTableData1, setDynamicTableData1] = useState<TableRow1[]>([]);
+  const [dynamicTableData2, setDynamicTableData2] = useState<TableRow2[]>([]);
   const [otherItems, setOtherItems] = useState(initialOtherItems);
   const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
   const [comment, setComment] = useState<string>("");
@@ -284,9 +302,14 @@ const MuxReportForm: NextPage = () => {
     fetchform();
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
-      [key: string]: string | number | boolean | ChecklistValues | any[];
+      [key: string]: string | number | boolean | ChecklistValues | TableRow1[] | TableRow2[];
     } = {
       reportDate: values.reportDate,
       day: values.day,
@@ -408,7 +431,7 @@ const MuxReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فرم گزارش روزانه انتقال

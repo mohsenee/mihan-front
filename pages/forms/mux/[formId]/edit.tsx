@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select";
 import MuxDynamicTable1 from "@/app/components/forms/dynamicTables/muxDynamicTable1";
@@ -195,18 +195,36 @@ const initialOtherItems: OtherItems[] = [
   },
 ];
 
+interface TableRow1 {
+  reporter: string;
+  systemType: string;
+  operation: string;
+  startTime: string;
+  endTime: string;
+  alarm: string;
+  description: string;
+}
+
+interface TableRow2 {
+  stationName: string;
+  stationNumber: string;
+  names: string;
+  timeFromCenter: string;
+  arriveTimeToStation: string;
+  timeFromStation: string;
+  workPermitNumber: string;
+  reason: string;
+  description: string;
+}
+
 const MuxReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [initialNames, setInitialNames] = useState<string[]>([]);
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([]);
+  const [dynamicTableData1, setDynamicTableData1] = useState<TableRow1[]>([]);
+  const [dynamicTableData2, setDynamicTableData2] = useState<TableRow2[]>([]);
   const [otherItems, setOtherItems] = useState(initialOtherItems);
   const [checklistItems, setChecklistItems] = useState(initialChecklistItems);
   const [comment, setComment] = useState<string>("");
@@ -315,12 +333,17 @@ const MuxReportForm: NextPage = () => {
     fetchNames();
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | ChecklistValues | any[] | null;
+      [key: string]: string | number | boolean | ChecklistValues | TableRow1[] | TableRow2[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
@@ -368,8 +391,6 @@ const MuxReportForm: NextPage = () => {
         }
       );
 
-      const result = await updateForm.json();
-      console.log("Response:", result);
       if (updateForm.ok) {
         alert("Data sent successfully!");
         router.push(`/forms/${role.toLowerCase()}/reports`);
@@ -423,7 +444,7 @@ const MuxReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فرم گزارش روزانه انتقال
@@ -474,10 +495,10 @@ const MuxReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

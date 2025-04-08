@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import ClickOutside from "../ClickOutside";
 import { useRouter } from "next/router";
 

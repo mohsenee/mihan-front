@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/router";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
@@ -331,10 +331,6 @@ const initialChecklistItems6: ChecklistItem[] = [
 ];
 
 const PowerReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -538,7 +534,12 @@ const PowerReportForm: NextPage = () => {
     };
 
     fetchForm();
-  }, []); // The empty array ensures this effect runs only once on the client
+  }, []);
+
+  const router = useRouter();
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
@@ -739,7 +740,7 @@ const PowerReportForm: NextPage = () => {
             onSubmit={handleSubmit}
             validateOnSubmit={true}
           >
-            {({ setFieldValue, values, validateField, isValid }) => (
+            {({ setFieldValue, values }) => (
               <Form>
                 <h4 className="text-center mb-4 font-bold text-lg">
                   فرم گزارش روزانه تجهیزات نیرو

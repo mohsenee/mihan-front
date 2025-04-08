@@ -53,8 +53,14 @@ const Login = () => {
       await fetchUserData(dispatch, data.access_token);
 
       router.push("/home/home");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        // Narrow down the type of err to an instance of Error
+        setError(err.message);
+      } else {
+        // If err is not an instance of Error, we can set a fallback message
+        setError("An unknown error occurred.");
+      }
     }
   };
 

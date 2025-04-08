@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
-import moment from "moment-jalaali";
+import moment, { Moment } from "moment-jalaali";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
@@ -55,11 +55,6 @@ interface ChecklistItem {
 }
 
 const PowerReportForm: NextPage = () => {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -417,6 +412,11 @@ const PowerReportForm: NextPage = () => {
     }
   }, []); 
 
+  const router = useRouter();
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
+
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
       [key: string]: string | number | boolean | object | null;
@@ -556,13 +556,21 @@ const PowerReportForm: NextPage = () => {
     }
   };
 
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
+  const handleDateChange = (date: DateObject | null, setFieldValue: (field: string, value: string) => void) => {
+    if (date) {
+      // Convert DateObject to Moment
+      const momentDate: Moment = moment(date.toString(), "YYYY/MM/DD");
+  
+      const formattedDate = momentDate.format("YYYY/MM/DD");
+      setFieldValue("reportDate", formattedDate);
+  
+      // Get the day index from the selected date
+      const dayIndex = momentDate.toDate().getDay(); // You can also use momentDate.day() if it's more accurate
+      setFieldValue("day", dayIndex.toString());
+    } else {
+      setFieldValue("reportDate", "");
+      setFieldValue("day", "");
+    }
   };
 
   const validationSchema = Yup.object({
@@ -609,7 +617,7 @@ const PowerReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فرم گزارش روزانه تجهیزات نیرو
@@ -622,13 +630,11 @@ const PowerReportForm: NextPage = () => {
                     تاریخ گزارش
                   </label>
                   <Field name="reportDate">
-                    {({ field, form }: FieldProps) => (
+                    {({ field }: FieldProps) => (
                       <DatePicker
                         {...field}
                         value={field.value || currentDate}
-                        onChange={(date: any) =>
-                          handleDateChange(date, setFieldValue)
-                        }
+                        onChange={(date: DateObject | null) => handleDateChange(date, setFieldValue)}
                         format="YYYY/MM/DD"
                         placeholder="تاریخ را انتخاب کنید"
                         className="w-full border rounded-md p-2"
@@ -653,7 +659,7 @@ const PowerReportForm: NextPage = () => {
                     as="select"
                     name="day"
                     value={values.day || currentDay}
-                    onChange={(e: any) => setFieldValue("day", e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFieldValue("day", e.target.value)}
                     className="w-full border rounded-md p-2"
                   >
                     {daysOfWeek.map((day) => (
@@ -681,10 +687,10 @@ const PowerReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

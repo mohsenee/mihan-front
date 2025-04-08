@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
 import FacilitiesDynamicTable from "@/app/components/forms/dynamicTables/facilitiesDynamicTable";
@@ -24,11 +24,22 @@ interface FormState {
   names: string[];
 }
 
+interface TableRow {
+  centerName: string;
+  floor: string;
+  station: string;
+  EMPM: string;
+  code: string;
+  equipmentName: string;
+  equipmentCode: string;
+  name: string;
+  description: string;
+  items: string;
+  itemsType: string;
+  itemsNumber: string;
+}
+
 const FacilitiesReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -37,7 +48,7 @@ const FacilitiesReportForm: NextPage = () => {
   const [comment, setComment] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
   const [userName, setUserName] = useState<string | null>("");
-  const [dynamicTableData, setDynamicTableData] = useState<any[]>([
+  const [dynamicTableData, setDynamicTableData] = useState<TableRow[]>([
     {
       centerName: "",
       floor: "",
@@ -117,12 +128,17 @@ const FacilitiesReportForm: NextPage = () => {
     fetchNames();
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | any[] | null;
+      [key: string]: string | number | boolean | TableRow[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
@@ -149,9 +165,6 @@ const FacilitiesReportForm: NextPage = () => {
           body: JSON.stringify(requestValue),
         }
       );
-
-      const result = await updateForm.json();
-      console.log("Response:", result);
       
       if (updateForm.ok) {
         alert("Data sent successfully!");
@@ -203,7 +216,7 @@ const FacilitiesReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 فــرم ثبت عملكـــرد كليـــه امور اجرايي PM و EM تاسیسات
@@ -254,10 +267,10 @@ const FacilitiesReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

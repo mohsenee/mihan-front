@@ -1,6 +1,7 @@
 import { NextPage } from "next";
-import React, { CSSProperties, useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import React, { useEffect, useState } from "react";
+import { Formik, Field, Form, ErrorMessage
+ } from "formik";
 import * as Yup from "yup";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import { useRouter } from "next/router";
@@ -89,11 +90,6 @@ const initialChecklistItems = [
 ];
 
 const SwitchReportForm: NextPage = () => {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -159,6 +155,12 @@ const SwitchReportForm: NextPage = () => {
 
     fetchForm();
   }, []);
+
+  const router = useRouter();
+
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
 
   const handleSubmit = async (values: FormState) => {
     const mappedValues: { [key: string]: string | boolean | number } = {
@@ -277,7 +279,7 @@ const SwitchReportForm: NextPage = () => {
             onSubmit={handleSubmit}
             validateOnSubmit={true}
           >
-            {({ setFieldValue, values, validateField, isValid }) => (
+            {({ setFieldValue, values, validateField }) => (
               <Form>
                 <h4 className="text-center mb-4 font-bold text-lg">
                   فرم گزارش روزانه دیتا و سوئیچ

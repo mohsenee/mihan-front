@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import DatePicker from "react-multi-date-picker";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import { useRouter } from "next/router";
@@ -64,7 +64,7 @@ const deleteFormsWithId = async (
 
 const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
   const [reports, setReports] = useState<Report[]>([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [modalData, setModalData] = useState<Report | null>(null);
   const [userName, setUserName] = useState<string | null>("");
   const [userAccess, setUserAccess] = useState(0);
@@ -102,11 +102,19 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
     loadReports();
   }, [role]);
 
-  const handleDateClick = (date: any) => {
-    let formattedDate = date.format();
+  const handleDateClick = (date: DateObject | null) => {
+    if (!date) {
+      // Handle the case when `date` is null (for example, reset the selected date)
+      setSelectedDate(null);
+      setModalData(null);
+      return;
+    }
+  
+    // Convert DateObject to Moment (or use native methods if needed)
+    const formattedDate = date.format ? date.format() : date.toString();  // Ensure you convert DateObject to a string or Moment format
+  
     const report = reports.find((r) => r.reportDate === formattedDate);
-    formattedDate = formattedDate.replace('/','-').replace('/','-')
-    setSelectedDate(formattedDate);
+    setSelectedDate(formattedDate.replace('/', '-').replace('/', '-'));
     setModalData(report || null);
   };
 
@@ -120,10 +128,6 @@ const FormElements: React.FC<FormElementsProps> = ({ role, title }) => {
     await deleteFormsWithId(modalData.id, role, userName);
     setReports(reports.filter((r) => r.id !== modalData.id));
     setModalData(null);
-  };
-
-  const handleCreateNewReport = () => {
-    window.location.href = `http://localhost:3000/forms/${role.toLowerCase()}/create/${selectedDate}`;
   };
 
   return (

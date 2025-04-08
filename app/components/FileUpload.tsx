@@ -9,7 +9,6 @@
  
  export default function FileUpload({ onFilesUploaded }: FileUploadProps) {
    const [files, setFiles] = useState<File[]>([]);
-   const [uploading, setUploading] = useState(false);
  
    const fileTypes: Accept = {
      'image/*': [],

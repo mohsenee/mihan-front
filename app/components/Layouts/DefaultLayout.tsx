@@ -1,5 +1,4 @@
 "use client";
-import React, { useState, ReactNode } from "react";
 import Header from "../Header";
 
 export default function DefaultLayout({

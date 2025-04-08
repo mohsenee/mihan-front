@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select";
 import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynamicTable1";
@@ -26,11 +26,52 @@ interface FormState {
   names: string[];
 }
 
+interface TableRow1 {
+  name: string;
+  OCDF_plan: string;
+  GIS: string;
+  fiber_plan: string;
+  response: string;
+  continuityTest: string;
+  route: string;
+  Long_UTM: string;
+  LAT_UTM: string;
+  improvment_security: string;
+  fix_failure: string;
+  door_cementing: string;
+}
+
+interface TableRow2 {
+  routeName: string;
+  name: string;
+  driver: string;
+  startTime: string;
+  endTime: string;
+  km: string;
+  excavation: string;
+  excavatorName: string;
+  license: string;
+  startDate: string;
+  endDate: string;
+  LONG_UTM: string;
+  LAT_UTM: string;
+  description: string;
+}
+
+interface TableRow3 {
+  contractorName: string;
+  status: string;
+  phoneContractor: string;
+  fromKm: string;
+  toKm: string;
+  bridgesCount: string;
+  polesCount: string;
+  pondsCount: string;
+  routeLength: string;
+  suggestions: string;
+}
+
 const FiberReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -39,7 +80,7 @@ const FiberReportForm: NextPage = () => {
   const [comment, setComment] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
   const [userName, setUserName] = useState<string | null>("");
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
+  const [dynamicTableData1, setDynamicTableData1] = useState<TableRow1[]>([
     {
       name: "",
       OCDF_plan: "",
@@ -55,7 +96,7 @@ const FiberReportForm: NextPage = () => {
       door_cementing: "",
     },
   ]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([
+  const [dynamicTableData2, setDynamicTableData2] = useState<TableRow2[]>([
     {
       routeName: "",
       name: "",
@@ -73,7 +114,7 @@ const FiberReportForm: NextPage = () => {
       description: "",
     },
   ]);
-  const [dynamicTableData3, setDynamicTableData3] = useState<any[]>([
+  const [dynamicTableData3, setDynamicTableData3] = useState<TableRow3[]>([
     {
       contractorName: "",
       status: "",
@@ -161,12 +202,17 @@ const FiberReportForm: NextPage = () => {
     fetchNames();
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
     const day = findDayOfWeek ? findDayOfWeek.value : "";
 
     const mappedValues: {
-      [key: string]: string | number | boolean | any[] | null;
+      [key: string]: string | number | boolean | TableRow1[] | TableRow2[] | TableRow3[] | null;
     } = {
       reportDate: values.reportDate,
       day: day,
@@ -199,8 +245,6 @@ const FiberReportForm: NextPage = () => {
         }
       );
 
-      const result = await updateForm.json();
-      console.log("Response:", result);
       if (updateForm.ok) {
         alert("Data sent successfully!");
         router.push(`/forms/${role.toLowerCase()}/reports`);
@@ -252,7 +296,7 @@ const FiberReportForm: NextPage = () => {
           onSubmit={handleSubmit}
           validateOnSubmit={true}
         >
-          {({ setFieldValue, values, validateField, isValid }) => (
+          {({ setFieldValue, values, isValid }) => (
             <Form>
               <h4 className="text-center mb-4 font-bold text-lg">
                 گزارش روزانه فیبرنوری
@@ -303,10 +347,10 @@ const FiberReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

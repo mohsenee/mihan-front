@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynamicTable1";
 import FiberDynamicTable2 from "@/app/components/forms/dynamicTables/fiberDynamicTable2";
@@ -23,18 +23,59 @@ interface FormState {
   createdBy: string;
 }
 
+interface TableRow1 {
+  name: string;
+  OCDF_plan: string;
+  GIS: string;
+  fiber_plan: string;
+  response: string;
+  continuityTest: string;
+  route: string;
+  Long_UTM: string;
+  LAT_UTM: string;
+  improvment_security: string;
+  fix_failure: string;
+  door_cementing: string;
+}
+
+interface TableRow2 {
+  routeName: string;
+  name: string;
+  driver: string;
+  startTime: string;
+  endTime: string;
+  km: string;
+  excavation: string;
+  excavatorName: string;
+  license: string;
+  startDate: string;
+  endDate: string;
+  LONG_UTM: string;
+  LAT_UTM: string;
+  description: string;
+}
+
+interface TableRow3 {
+  contractorName: string;
+  status: string;
+  phoneContractor: string;
+  fromKm: string;
+  toKm: string;
+  bridgesCount: string;
+  polesCount: string;
+  pondsCount: string;
+  routeLength: string;
+  suggestions: string;
+}
+
 const FiberReportForm: NextPage = () => {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [names, setNames] = useState<string>("");
   const [createdBy, setCreatedBy] = useState<string>("");
   const [comment, setComment] = useState<string>("");
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
+  const [dynamicTableData1, setDynamicTableData1] = useState<TableRow1[]>([
     {
       name: "",
       OCDF_plan: "",
@@ -50,7 +91,7 @@ const FiberReportForm: NextPage = () => {
       door_cementing: "",
     },
   ]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([
+  const [dynamicTableData2, setDynamicTableData2] = useState<TableRow2[]>([
     {
       routeName: "",
       name: "",
@@ -68,7 +109,7 @@ const FiberReportForm: NextPage = () => {
       description: "",
     },
   ]);
-  const [dynamicTableData3, setDynamicTableData3] = useState<any[]>([
+  const [dynamicTableData3, setDynamicTableData3] = useState<TableRow3[]>([
     {
       contractorName: "",
       status: "",
@@ -130,9 +171,14 @@ const FiberReportForm: NextPage = () => {
     fetchForm();
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
-      [key: string]: string | number | boolean | any[];
+      [key: string]: string | number | boolean | TableRow1[] | TableRow2[] | TableRow3[];
     } = {
       reportDate: values.reportDate,
       day: values.day,
@@ -233,7 +279,7 @@ const FiberReportForm: NextPage = () => {
             onSubmit={handleSubmit}
             validateOnSubmit={true}
           >
-            {({ setFieldValue, values, validateField, isValid }) => (
+            {() => (
               <Form>
                 <h4 className="text-center mb-4 font-bold text-lg">
                   گزارش روزانه فیبرنوری

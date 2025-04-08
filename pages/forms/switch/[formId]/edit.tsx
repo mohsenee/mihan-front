@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import Select, { OnChangeValue } from "react-select";
 import * as Yup from "yup";
 import "react-multi-date-picker/styles/layouts/mobile.css";
@@ -92,11 +92,6 @@ const initialChecklistItems = [
 ];
 
 const SwitchReportForm: NextPage = () => {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
@@ -191,6 +186,12 @@ const SwitchReportForm: NextPage = () => {
     fetchNames();
   }, []);
 
+  const router = useRouter();
+
+  if (!router.isReady) {
+    return <span>page is loading</span>;
+  }
+
   const handleSubmit = async (values: FormState) => {
     const findDayOfWeek = daysOfWeek.find((day) => day.label === values.day);
     const day = findDayOfWeek ? findDayOfWeek.value : "";
@@ -232,7 +233,6 @@ const SwitchReportForm: NextPage = () => {
         }
       );
 
-      const result = await updateForm.json();
 
       if (updateForm.ok) {
         alert("Data sent successfully!");
@@ -351,10 +351,10 @@ const SwitchReportForm: NextPage = () => {
                       label: name,
                       value: name,
                     }))}
-                    onChange={(selected: OnChangeValue<any, any>) => {
+                    onChange={(selected: OnChangeValue<NameOption, true>) => {
                       setFieldValue(
                         "names",
-                        selected ? selected.map((opt: any) => opt.value) : []
+                        selected ? selected.map((opt: NameOption) => opt.value) : []
                       );
                     }}
                     className="w-full border rounded-md p-2"

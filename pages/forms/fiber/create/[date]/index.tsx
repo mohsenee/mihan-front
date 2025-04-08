@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage, FieldProps } from "formik";
 import * as Yup from "yup";
 import Select, { OnChangeValue } from "react-select"; // Import OnChangeValue to type the onChange handler
-import DatePicker from "react-multi-date-picker";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import "react-multi-date-picker/styles/layouts/mobile.css";
 import persian from "react-date-object/calendars/persian";
 import fa from "react-date-object/locales/persian_fa";
@@ -11,7 +11,7 @@ import FiberDynamicTable1 from "@/app/components/forms/dynamicTables/fiberDynami
 import FiberDynamicTable2 from "@/app/components/forms/dynamicTables/fiberDynamicTable2";
 import FiberDynamicTable3 from "@/app/components/forms/dynamicTables/fiberDynamicTable3";
 import { useRouter } from "next/router";
-import moment from "moment-jalaali";
+import moment, { Moment } from "moment-jalaali";
 import DefaultLayout from "@/app/components/Layouts/DefaultLayout";
 import Breadcrumb from "@/app/components/Breadcrumbs/Breadcrumb";
 
@@ -31,17 +31,57 @@ interface FormState {
   names: string[];
 }
 
-const FiberReportForm: NextPage = () => {
-  const router = useRouter();
+interface TableRow1 {
+  name: string;
+  OCDF_plan: string;
+  GIS: string;
+  fiber_plan: string;
+  response: string;
+  continuityTest: string;
+  route: string;
+  Long_UTM: string;
+  LAT_UTM: string;
+  improvment_security: string;
+  fix_failure: string;
+  door_cementing: string;
+}
 
-  if (!router.isReady) {
-    return <span>page is loading</span>;
-  }
+interface TableRow2 {
+  routeName: string;
+  name: string;
+  driver: string;
+  startTime: string;
+  endTime: string;
+  km: string;
+  excavation: string;
+  excavatorName: string;
+  license: string;
+  startDate: string;
+  endDate: string;
+  LONG_UTM: string;
+  LAT_UTM: string;
+  description: string;
+}
+
+interface TableRow3 {
+  contractorName: string;
+  status: string;
+  phoneContractor: string;
+  fromKm: string;
+  toKm: string;
+  bridgesCount: string;
+  polesCount: string;
+  pondsCount: string;
+  routeLength: string;
+  suggestions: string;
+}
+
+const FiberReportForm: NextPage = () => {
 
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentDay, setCurrentDay] = useState<string>("");
   const [namesOptions, setNamesOptions] = useState<NameOption[]>([]);
-  const [dynamicTableData1, setDynamicTableData1] = useState<any[]>([
+  const [dynamicTableData1, setDynamicTableData1] = useState<TableRow1[]>([
     {
       name: "",
       OCDF_plan: "",
@@ -57,7 +97,7 @@ const FiberReportForm: NextPage = () => {
       door_cementing: "",
     },
   ]);
-  const [dynamicTableData2, setDynamicTableData2] = useState<any[]>([
+  const [dynamicTableData2, setDynamicTableData2] = useState<TableRow2[]>([
     {
       routeName: "",
       name: "",
@@ -75,7 +115,7 @@ const FiberReportForm: NextPage = () => {
       description: "",
     },
   ]);
-  const [dynamicTableData3, setDynamicTableData3] = useState<any[]>([
+  const [dynamicTableData3, setDynamicTableData3] = useState<TableRow3[]>([
     {
       contractorName: "",
       status: "",
@@ -159,9 +199,14 @@ const FiberReportForm: NextPage = () => {
     }
   }, []);
 
+  const router = useRouter();
+    if (!router.isReady) {
+      return <span>page is loading</span>;
+    }
+
   const handleSubmit = async (values: FormState) => {
     const mappedValues: {
-      [key: string]: string | number | boolean | any[] | null;
+      [key: string]: string | number | boolean | TableRow1[] | TableRow2[] | TableRow3[] | null;
     } = {
       reportDate: values.reportDate,
       day: values.day,
@@ -207,13 +252,21 @@ const FiberReportForm: NextPage = () => {
     }
   };
 
-  const handleDateChange = (date: any, setFieldValue: any) => {
-    const formattedDate = date ? date.format("YYYY/MM/DD") : "";
-    setFieldValue("reportDate", formattedDate);
-
-    // Get the day index from the selected date
-    const dayIndex = date ? date.toDate().getDay() : new Date().getDay();
-    setFieldValue("day", dayIndex.toString());
+  const handleDateChange = (date: DateObject | null, setFieldValue: (field: string, value: string) => void) => {
+    if (date) {
+      // Convert DateObject to Moment
+      const momentDate: Moment = moment(date.toString(), "YYYY/MM/DD");
+  
+      const formattedDate = momentDate.format("YYYY/MM/DD");
+      setFieldValue("reportDate", formattedDate);
+  
+      // Get the day index from the selected date
+      const dayIndex = momentDate.toDate().getDay(); // You can also use momentDate.day() if it's more accurate
+      setFieldValue("day", dayIndex.toString());
+    } else {
+      setFieldValue("reportDate", "");
+      setFieldValue("day", "");
+    }
   };
 
   const validationSchema = Yup.object({
@@ -254,7 +307,7 @@ const FiberReportForm: NextPage = () => {
             onSubmit={handleSubmit}
             validateOnSubmit={true}
           >
-            {({ setFieldValue, values, validateField, isValid }) => (
+            {({ setFieldValue, values, isValid }) => (
               <Form>
                 <h4 className="text-center mb-4 font-bold text-lg">
                   گزارش روزانه فیبرنوری
@@ -267,13 +320,11 @@ const FiberReportForm: NextPage = () => {
                       تاریخ گزارش
                     </label>
                     <Field name="reportDate">
-                      {({ field, form }: FieldProps) => (
+                      {({ field }: FieldProps) => (
                         <DatePicker
                           {...field}
                           value={field.value || currentDate}
-                          onChange={(date: any) =>
-                            handleDateChange(date, setFieldValue)
-                          }
+                          onChange={(date: DateObject | null) => handleDateChange(date, setFieldValue)}
                           format="YYYY/MM/DD"
                           placeholder="تاریخ را انتخاب کنید"
                           className="w-full border rounded-md p-2"
@@ -298,7 +349,7 @@ const FiberReportForm: NextPage = () => {
                       as="select"
                       name="day"
                       value={values.day || currentDay}
-                      onChange={(e: any) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setFieldValue("day", e.target.value)
                       }
                       className="w-full border rounded-md p-2"
@@ -328,10 +379,10 @@ const FiberReportForm: NextPage = () => {
                         label: name,
                         value: name,
                       }))}
-                      onChange={(selected: OnChangeValue<any, any>) => {
+                      onChange={(selected: OnChangeValue<NameOption, true>) => {
                         setFieldValue(
                           "names",
-                          selected ? selected.map((opt: any) => opt.value) : []
+                          selected ? selected.map((opt: NameOption) => opt.value) : []
                         );
                       }}
                       className="w-full border rounded-md p-2"
